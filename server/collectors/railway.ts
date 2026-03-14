@@ -2,8 +2,22 @@ import type { BaseCollector, CollectorResult, CostRecord } from './base'
 
 /**
  * Railway cost collector using GraphQL API.
- * Fetches usage and estimated costs for the current billing period.
+ * Fetches project list and usage metrics, then estimates costs using Railway pricing.
+ *
+ * Railway pricing (Hobby plan):
+ * - CPU: $0.000463 / vCPU / minute
+ * - Memory: $0.000231 / GB / minute
+ * - Egress: $0.05 / GB
+ * - Disk: $0.000003 / GB / minute
  */
+
+const RAILWAY_PRICING = {
+  CPU_USAGE: 0.000463, // per vCPU-minute
+  MEMORY_USAGE_GB: 0.000231, // per GB-minute
+  NETWORK_TX_GB: 0.05, // per GB
+  DISK_USAGE_GB: 0.000003, // per GB-minute
+}
+
 export function createRailwayCollector(apiToken: string, platformId: number, serviceId?: number): BaseCollector {
   return {
     platformSlug: 'railway',
@@ -13,29 +27,19 @@ export function createRailwayCollector(apiToken: string, platformId: number, ser
       const errors: string[] = []
 
       try {
-        // Step 1: Get current usage estimate
-        const usageQuery = `
+        const query = `
           query {
-            me {
-              projects {
-                edges {
-                  node {
-                    id
-                    name
-                    services {
-                      edges {
-                        node {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
+            projects {
+              edges {
+                node {
+                  id
+                  name
                 }
               }
             }
-            estimatedUsage {
+            estimatedUsage(measurements: [CPU_USAGE, MEMORY_USAGE_GB, NETWORK_TX_GB, DISK_USAGE_GB]) {
               estimatedValue
+              measurement
               projectId
             }
           }
@@ -47,7 +51,7 @@ export function createRailwayCollector(apiToken: string, platformId: number, ser
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${apiToken}`,
           },
-          body: JSON.stringify({ query: usageQuery }),
+          body: JSON.stringify({ query }),
         })
 
         if (!response.ok) {
@@ -59,17 +63,13 @@ export function createRailwayCollector(apiToken: string, platformId: number, ser
           data?: {
             estimatedUsage?: Array<{
               estimatedValue: number
+              measurement: string
               projectId: string
             }>
-            me?: {
-              projects?: {
-                edges: Array<{
-                  node: {
-                    id: string
-                    name: string
-                  }
-                }>
-              }
+            projects?: {
+              edges: Array<{
+                node: { id: string; name: string }
+              }>
             }
           }
           errors?: Array<{ message: string }>
@@ -81,30 +81,41 @@ export function createRailwayCollector(apiToken: string, platformId: number, ser
         }
 
         const usage = data.data?.estimatedUsage
+        const projects = data.data?.projects?.edges?.map(e => e.node) ?? []
+        const projectNames = Object.fromEntries(projects.map(p => [p.id, p.name]))
+
         if (usage && usage.length > 0) {
-          // Sum all project usage
-          let totalCost = 0
-          const projectDetails: Record<string, unknown>[] = []
+          // Group by project and calculate cost
+          const projectCosts: Record<string, { cost: number; details: Record<string, number> }> = {}
 
           for (const item of usage) {
-            totalCost += item.estimatedValue / 100 // Railway returns cents
-            projectDetails.push(item)
+            if (!projectCosts[item.projectId]) {
+              projectCosts[item.projectId] = { cost: 0, details: {} }
+            }
+            const rate = RAILWAY_PRICING[item.measurement as keyof typeof RAILWAY_PRICING] ?? 0
+            const itemCost = item.estimatedValue * rate
+            projectCosts[item.projectId].cost += itemCost
+            projectCosts[item.projectId].details[item.measurement] = item.estimatedValue
           }
 
-          if (totalCost > 0) {
-            records.push({
-              platformId,
-              serviceId,
-              recordDate: new Date(),
-              periodStart,
-              periodEnd,
-              amount: totalCost.toFixed(4),
-              currency: 'USD',
-              costType: 'usage',
-              collectionMethod: 'api',
-              rawData: { usage: projectDetails },
-              notes: `Railway estimated usage for ${usage.length} project(s)`,
-            })
+          // Create a record per project with estimated cost
+          for (const [projectId, data] of Object.entries(projectCosts)) {
+            if (data.cost > 0) {
+              const name = projectNames[projectId] ?? projectId
+              records.push({
+                platformId,
+                serviceId,
+                recordDate: new Date(),
+                periodStart,
+                periodEnd,
+                amount: data.cost.toFixed(4),
+                currency: 'USD',
+                costType: 'usage',
+                collectionMethod: 'api',
+                rawData: { projectId, projectName: name, metrics: data.details },
+                notes: `Railway project "${name}" estimated usage`,
+              })
+            }
           }
         }
       }
