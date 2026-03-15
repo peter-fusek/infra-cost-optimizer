@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const navigation = [
   { label: 'Overview', icon: 'i-lucide-layout-dashboard', to: '/' },
+  { label: 'Breakdown', icon: 'i-lucide-list-tree', to: '/breakdown' },
+  { label: 'Optimizations', icon: 'i-lucide-lightbulb', to: '/optimizations' },
   { label: 'Platforms', icon: 'i-lucide-server', to: '/platforms' },
   { label: 'Manual Entry', icon: 'i-lucide-pencil', to: '/manual' },
 ]

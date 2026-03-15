@@ -1,11 +1,11 @@
 import { eq } from 'drizzle-orm'
-import { platforms, services, budgets } from '../db/schema'
-import { platformSeed, serviceSeed, budgetSeed } from '../db/seed'
+import { platforms, services, budgets, optimizations } from '../db/schema'
+import { platformSeed, serviceSeed, budgetSeed, optimizationSeed } from '../db/seed'
 
 /** Seed platform and service inventory. Idempotent — skips existing records. */
 export default defineEventHandler(async () => {
   const db = useDB()
-  const results = { platforms: 0, services: 0, budgets: 0 }
+  const results = { platforms: 0, services: 0, budgets: 0, optimizations: 0 }
 
   // Seed platforms
   for (const p of platformSeed) {
@@ -52,6 +52,25 @@ export default defineEventHandler(async () => {
         monthlyLimit: b.monthlyLimit,
       })
       results.budgets++
+    }
+  }
+
+  // Seed optimizations
+  for (const o of optimizationSeed) {
+    const existing = await db.select().from(optimizations)
+      .where(eq(optimizations.title, o.title))
+      .limit(1)
+    if (existing.length === 0) {
+      const platformId = platformMap.get(o.platformSlug)
+      await db.insert(optimizations).values({
+        title: o.title,
+        description: o.description,
+        platformId: platformId ?? null,
+        estimatedSavings: o.estimatedSavings,
+        effort: o.effort,
+        suggestedBy: o.suggestedBy,
+      })
+      results.optimizations++
     }
   }
 

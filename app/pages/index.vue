@@ -1,44 +1,40 @@
 <script setup lang="ts">
+interface ServiceCost {
+  serviceId: number | null
+  serviceName: string | null
+  amount: number
+  amountEur: number
+}
+
 interface PlatformCost {
   platformId: number
   platformSlug: string
   platformName: string
+  platformType: string
   mtd: number
+  mtdEur: number
   eomEstimate: number
+  eomEstimateEur: number
   recordCount: number
+  services: ServiceCost[]
 }
 
 interface MTDSummary {
   totalMTD: number
+  totalMTDEur: number
   eomEstimate: number
+  eomEstimateEur: number
+  budgetLimit: number
+  budgetLimitEur: number
+  budgetUsedPct: number
   monthProgress: number
   daysInMonth: number
   currentDay: number
+  eurUsdRate: number
   byPlatform: PlatformCost[]
 }
 
 const { data: mtd, status, refresh } = await useFetch<MTDSummary>('/api/costs/mtd')
-
-const topCards = computed(() => [
-  {
-    label: 'Month-to-Date',
-    value: mtd.value ? `$${mtd.value.totalMTD.toFixed(2)}` : '$0.00',
-    description: `Day ${mtd.value?.currentDay || 0} of ${mtd.value?.daysInMonth || 30}`,
-    icon: 'i-lucide-dollar-sign',
-  },
-  {
-    label: 'EOM Estimate',
-    value: mtd.value ? `$${mtd.value.eomEstimate.toFixed(2)}` : '$0.00',
-    description: `${mtd.value?.monthProgress || 0}% through the month`,
-    icon: 'i-lucide-trending-up',
-  },
-  {
-    label: 'Platforms Tracked',
-    value: mtd.value?.byPlatform.length || 0,
-    description: 'With cost data this month',
-    icon: 'i-lucide-server',
-  },
-])
 
 const collecting = ref(false)
 
@@ -52,6 +48,17 @@ async function triggerCollection() {
     collecting.value = false
   }
 }
+
+function fmt(n: number | undefined) {
+  return (n ?? 0).toFixed(2)
+}
+
+const budgetColor = computed(() => {
+  const pct = mtd.value?.budgetUsedPct ?? 0
+  if (pct >= 100) return 'error'
+  if (pct >= 90) return 'warning'
+  return 'primary'
+})
 </script>
 
 <template>
@@ -61,26 +68,76 @@ async function triggerCollection() {
         <h2 class="text-2xl font-bold">Infrastructure Costs</h2>
         <p class="text-sm text-[var(--ui-text-muted)]">
           {{ new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}
+          &middot; Day {{ mtd?.currentDay || 0 }} of {{ mtd?.daysInMonth || 31 }}
+          &middot; 1 USD = {{ mtd?.eurUsdRate ?? 0.92 }} EUR
         </p>
       </div>
-      <UButton
-        icon="i-lucide-refresh-cw"
-        label="Collect Now"
-        :loading="collecting"
-        @click="triggerCollection"
-      />
+      <div class="flex gap-2">
+        <UButton
+          icon="i-lucide-refresh-cw"
+          label="Collect Now"
+          :loading="collecting"
+          @click="triggerCollection"
+        />
+      </div>
     </div>
 
     <!-- Top metric cards -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <UCard v-for="card in topCards" :key="card.label">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <UCard>
         <div class="flex items-start justify-between">
           <div>
-            <p class="text-sm text-[var(--ui-text-muted)]">{{ card.label }}</p>
-            <p class="mt-1 text-2xl font-semibold">{{ card.value }}</p>
-            <p class="mt-1 text-xs text-[var(--ui-text-dimmed)]">{{ card.description }}</p>
+            <p class="text-sm text-[var(--ui-text-muted)]">Month-to-Date</p>
+            <p class="mt-1 text-2xl font-semibold">${{ fmt(mtd?.totalMTD) }}</p>
+            <p class="mt-0.5 text-sm text-[var(--ui-text-dimmed)]">€{{ fmt(mtd?.totalMTDEur) }}</p>
           </div>
-          <UIcon :name="card.icon" class="size-5 text-[var(--ui-text-muted)]" />
+          <UIcon name="i-lucide-dollar-sign" class="size-5 text-[var(--ui-text-muted)]" />
+        </div>
+      </UCard>
+
+      <UCard>
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-[var(--ui-text-muted)]">EOM Estimate</p>
+            <p class="mt-1 text-2xl font-semibold">${{ fmt(mtd?.eomEstimate) }}</p>
+            <p class="mt-0.5 text-sm text-[var(--ui-text-dimmed)]">€{{ fmt(mtd?.eomEstimateEur) }}</p>
+          </div>
+          <UIcon name="i-lucide-trending-up" class="size-5 text-[var(--ui-text-muted)]" />
+        </div>
+      </UCard>
+
+      <UCard>
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-[var(--ui-text-muted)]">Budget</p>
+            <p class="mt-1 text-2xl font-semibold">{{ mtd?.budgetUsedPct ?? 0 }}%</p>
+            <p class="mt-0.5 text-sm text-[var(--ui-text-dimmed)]">${{ fmt(mtd?.eomEstimate) }} / ${{ fmt(mtd?.budgetLimit) }}</p>
+          </div>
+          <UIcon name="i-lucide-gauge" class="size-5 text-[var(--ui-text-muted)]" />
+        </div>
+        <div class="mt-3">
+          <div class="h-2 w-full rounded-full bg-[var(--ui-bg-elevated)]">
+            <div
+              class="h-2 rounded-full transition-all"
+              :class="{
+                'bg-[var(--ui-primary)]': budgetColor === 'primary',
+                'bg-[var(--ui-warning)]': budgetColor === 'warning',
+                'bg-[var(--ui-error)]': budgetColor === 'error',
+              }"
+              :style="{ width: `${Math.min(mtd?.budgetUsedPct ?? 0, 100)}%` }"
+            />
+          </div>
+        </div>
+      </UCard>
+
+      <UCard>
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-[var(--ui-text-muted)]">Platforms Tracked</p>
+            <p class="mt-1 text-2xl font-semibold">{{ mtd?.byPlatform?.length || 0 }}</p>
+            <p class="mt-0.5 text-sm text-[var(--ui-text-dimmed)]">{{ mtd?.monthProgress ?? 0 }}% through month</p>
+          </div>
+          <UIcon name="i-lucide-server" class="size-5 text-[var(--ui-text-muted)]" />
         </div>
       </UCard>
     </div>
@@ -88,7 +145,10 @@ async function triggerCollection() {
     <!-- Platform breakdown -->
     <UCard>
       <template #header>
-        <h3 class="font-semibold">Cost by Platform</h3>
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">Cost by Platform</h3>
+          <UButton to="/breakdown" variant="ghost" size="xs" label="View Full Breakdown" icon="i-lucide-arrow-right" trailing />
+        </div>
       </template>
 
       <div v-if="status === 'pending'" class="flex justify-center py-8">
@@ -100,16 +160,49 @@ async function triggerCollection() {
         <p class="mt-1 text-sm">Click "Collect Now" or add manual entries to get started.</p>
       </div>
 
-      <UTable
-        v-else
-        :data="mtd.byPlatform"
-        :columns="[
-          { accessorKey: 'platformName', header: 'Platform' },
-          { accessorKey: 'mtd', header: 'MTD', cell: ({ row }: any) => `$${row.original.mtd.toFixed(2)}` },
-          { accessorKey: 'eomEstimate', header: 'EOM Est.', cell: ({ row }: any) => `$${row.original.eomEstimate.toFixed(2)}` },
-          { accessorKey: 'recordCount', header: 'Records' },
-        ]"
-      />
+      <div v-else class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-[var(--ui-text-muted)]">
+              <th class="pb-3 font-medium">Platform</th>
+              <th class="pb-3 font-medium">Type</th>
+              <th class="pb-3 text-right font-medium">MTD (USD)</th>
+              <th class="pb-3 text-right font-medium">MTD (EUR)</th>
+              <th class="pb-3 text-right font-medium">EOM Est. (USD)</th>
+              <th class="pb-3 text-right font-medium">EOM Est. (EUR)</th>
+              <th class="pb-3 text-right font-medium">Records</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="p in mtd.byPlatform" :key="p.platformId" class="border-t border-[var(--ui-border)]">
+              <td class="py-2.5 font-medium">{{ p.platformName }}</td>
+              <td class="py-2.5">
+                <UBadge
+                  :color="p.platformType === 'ai' ? 'warning' : p.platformType === 'hosting' ? 'primary' : 'neutral'"
+                  variant="subtle" size="xs"
+                >
+                  {{ p.platformType }}
+                </UBadge>
+              </td>
+              <td class="py-2.5 text-right font-mono">${{ fmt(p.mtd) }}</td>
+              <td class="py-2.5 text-right font-mono text-[var(--ui-text-muted)]">€{{ fmt(p.mtdEur) }}</td>
+              <td class="py-2.5 text-right font-mono">${{ fmt(p.eomEstimate) }}</td>
+              <td class="py-2.5 text-right font-mono text-[var(--ui-text-muted)]">€{{ fmt(p.eomEstimateEur) }}</td>
+              <td class="py-2.5 text-right">{{ p.recordCount }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="border-t-2 border-[var(--ui-border)] font-semibold">
+              <td class="pt-3" colspan="2">Total</td>
+              <td class="pt-3 text-right font-mono">${{ fmt(mtd.totalMTD) }}</td>
+              <td class="pt-3 text-right font-mono text-[var(--ui-text-muted)]">€{{ fmt(mtd.totalMTDEur) }}</td>
+              <td class="pt-3 text-right font-mono">${{ fmt(mtd.eomEstimate) }}</td>
+              <td class="pt-3 text-right font-mono text-[var(--ui-text-muted)]">€{{ fmt(mtd.eomEstimateEur) }}</td>
+              <td class="pt-3 text-right">{{ mtd.byPlatform.reduce((s: number, p: PlatformCost) => s + p.recordCount, 0) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </UCard>
   </div>
 </template>

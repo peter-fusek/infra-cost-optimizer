@@ -1,43 +1,80 @@
-import { and, eq, gte, lte, sql, isNull } from 'drizzle-orm'
-import { costRecords, platforms, services } from '../db/schema'
+import { and, eq, gte, lte, sql, isNull, desc } from 'drizzle-orm'
+import { costRecords, platforms, services, budgets } from '../db/schema'
 import { getMonthProgress, getCurrentMonthRange } from '../collectors/base'
 
-export interface MTDSummary {
-  totalMTD: number
-  eomEstimate: number
-  monthProgress: number
-  daysInMonth: number
-  currentDay: number
-  byPlatform: PlatformCost[]
+const EUR_USD_RATE = 0.92
+
+function toEur(usd: number): number {
+  return Math.round(usd * EUR_USD_RATE * 100) / 100
+}
+
+export interface ServiceCost {
+  serviceId: number | null
+  serviceName: string | null
+  project: string | null
+  serviceType: string | null
+  amount: number
+  amountEur: number
+  costType: string
+  collectionMethod: string
+  recordCount: number
+  notes: string | null
 }
 
 export interface PlatformCost {
   platformId: number
   platformSlug: string
   platformName: string
+  platformType: string
   mtd: number
+  mtdEur: number
   eomEstimate: number
+  eomEstimateEur: number
   recordCount: number
+  services: ServiceCost[]
 }
 
-/** Get month-to-date spend with EOM projection */
+export interface MTDSummary {
+  totalMTD: number
+  totalMTDEur: number
+  eomEstimate: number
+  eomEstimateEur: number
+  budgetLimit: number
+  budgetLimitEur: number
+  budgetUsedPct: number
+  monthProgress: number
+  daysInMonth: number
+  currentDay: number
+  eurUsdRate: number
+  byPlatform: PlatformCost[]
+}
+
+/** Get month-to-date spend with EOM projection, EUR values, and per-service detail */
 export async function getMTDSummary(db: ReturnType<typeof import('../utils/db').useDB>): Promise<MTDSummary> {
   const { start, end } = getCurrentMonthRange()
   const progress = getMonthProgress()
   const now = new Date()
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
 
-  // Get MTD totals grouped by platform
-  const results = await db
+  // Get all cost records for current month with service detail
+  const records = await db
     .select({
       platformId: costRecords.platformId,
       platformSlug: platforms.slug,
       platformName: platforms.name,
-      total: sql<string>`sum(${costRecords.amount})`,
-      count: sql<number>`count(*)`,
+      platformType: platforms.type,
+      serviceId: costRecords.serviceId,
+      serviceName: services.name,
+      serviceProject: services.project,
+      serviceType: services.serviceType,
+      amount: costRecords.amount,
+      costType: costRecords.costType,
+      collectionMethod: costRecords.collectionMethod,
+      notes: costRecords.notes,
     })
     .from(costRecords)
     .innerJoin(platforms, eq(costRecords.platformId, platforms.id))
+    .leftJoin(services, eq(costRecords.serviceId, services.id))
     .where(
       and(
         gte(costRecords.periodStart, start),
@@ -46,25 +83,99 @@ export async function getMTDSummary(db: ReturnType<typeof import('../utils/db').
         isNull(costRecords.deletedAt),
       ),
     )
-    .groupBy(costRecords.platformId, platforms.slug, platforms.name)
 
-  const byPlatform: PlatformCost[] = results.map(r => ({
-    platformId: r.platformId,
-    platformSlug: r.platformSlug,
-    platformName: r.platformName,
-    mtd: parseFloat(r.total || '0'),
-    eomEstimate: progress > 0 ? parseFloat(r.total || '0') / progress : 0,
-    recordCount: r.count,
-  }))
+  // Group by platform, then by service
+  const platformMap = new Map<number, PlatformCost>()
+  const serviceMap = new Map<string, ServiceCost>() // key: platformId-serviceId
+
+  for (const r of records) {
+    const amt = parseFloat(r.amount || '0')
+
+    // Ensure platform entry
+    if (!platformMap.has(r.platformId)) {
+      platformMap.set(r.platformId, {
+        platformId: r.platformId,
+        platformSlug: r.platformSlug,
+        platformName: r.platformName,
+        platformType: r.platformType,
+        mtd: 0,
+        mtdEur: 0,
+        eomEstimate: 0,
+        eomEstimateEur: 0,
+        recordCount: 0,
+        services: [],
+      })
+    }
+    const platform = platformMap.get(r.platformId)!
+    platform.mtd += amt
+    platform.recordCount += 1
+
+    // Aggregate by service within platform
+    const svcKey = `${r.platformId}-${r.serviceId ?? 'none'}`
+    if (!serviceMap.has(svcKey)) {
+      serviceMap.set(svcKey, {
+        serviceId: r.serviceId,
+        serviceName: r.serviceName,
+        project: r.serviceProject ?? null,
+        serviceType: r.serviceType ?? null,
+        amount: 0,
+        amountEur: 0,
+        costType: r.costType,
+        collectionMethod: r.collectionMethod,
+        recordCount: 0,
+        notes: r.notes,
+      })
+    }
+    const svc = serviceMap.get(svcKey)!
+    svc.amount += amt
+    svc.recordCount += 1
+  }
+
+  // Attach services to platforms and compute EUR + EOM
+  const byPlatform: PlatformCost[] = []
+  for (const [platformId, platform] of platformMap) {
+    platform.mtdEur = toEur(platform.mtd)
+    platform.eomEstimate = progress > 0 ? platform.mtd / progress : 0
+    platform.eomEstimateEur = toEur(platform.eomEstimate)
+
+    // Collect services for this platform
+    for (const [key, svc] of serviceMap) {
+      if (key.startsWith(`${platformId}-`)) {
+        svc.amountEur = toEur(svc.amount)
+        platform.services.push(svc)
+      }
+    }
+    // Sort services by amount descending
+    platform.services.sort((a, b) => b.amount - a.amount)
+    byPlatform.push(platform)
+  }
+
+  // Sort platforms by MTD descending
+  byPlatform.sort((a, b) => b.mtd - a.mtd)
 
   const totalMTD = byPlatform.reduce((sum, p) => sum + p.mtd, 0)
+  const eomEstimate = progress > 0 ? totalMTD / progress : 0
+
+  // Get budget limit
+  const budgetRows = await db
+    .select({ monthlyLimit: budgets.monthlyLimit })
+    .from(budgets)
+    .where(and(eq(budgets.isActive, true), isNull(budgets.platformId)))
+    .limit(1)
+  const budgetLimit = budgetRows.length > 0 ? parseFloat(budgetRows[0].monthlyLimit) : 500
 
   return {
-    totalMTD,
-    eomEstimate: progress > 0 ? totalMTD / progress : 0,
+    totalMTD: Math.round(totalMTD * 100) / 100,
+    totalMTDEur: toEur(totalMTD),
+    eomEstimate: Math.round(eomEstimate * 100) / 100,
+    eomEstimateEur: toEur(eomEstimate),
+    budgetLimit,
+    budgetLimitEur: toEur(budgetLimit),
+    budgetUsedPct: budgetLimit > 0 ? Math.round((eomEstimate / budgetLimit) * 100) : 0,
     monthProgress: Math.round(progress * 100),
     daysInMonth,
     currentDay: now.getDate(),
+    eurUsdRate: EUR_USD_RATE,
     byPlatform,
   }
 }
