@@ -1,9 +1,10 @@
 import type { BaseCollector, CollectorResult, CostRecord } from './base'
 
 /**
- * Neon collector — checks project consumption via API.
+ * Neon collector — checks account info via API.
  * Free tier: 0.5 GiB storage, 191.9 compute hours/mo.
- * API docs: https://api-docs.neon.tech/reference
+ * Note: /projects endpoint requires org_id (not available on personal free tier).
+ * Uses /users/me to verify account and report plan status.
  */
 export function createNeonCollector(apiKey: string, platformId: number): BaseCollector {
   return {
@@ -14,8 +15,8 @@ export function createNeonCollector(apiKey: string, platformId: number): BaseCol
       const errors: string[] = []
 
       try {
-        // List projects to verify key and get usage info
-        const response = await fetch('https://console.neon.tech/api/v2/projects', {
+        // Use /users/me to verify key and get plan info
+        const response = await fetch('https://console.neon.tech/api/v2/users/me', {
           headers: { Authorization: `Bearer ${apiKey}` },
         })
 
@@ -24,63 +25,27 @@ export function createNeonCollector(apiKey: string, platformId: number): BaseCol
           return { records, errors }
         }
 
-        const data = await response.json() as { projects: Array<{ id: string; name: string }> }
-        const projectCount = data.projects?.length ?? 0
+        const user = await response.json() as {
+          plan: string
+          active_seconds_limit: number
+          projects_limit: number
+          auth_accounts: Array<{ email: string; login: string }>
+        }
 
-        // Try to get consumption data
-        let totalCost = 0
-        try {
-          const billingResponse = await fetch('https://console.neon.tech/api/v2/consumption/projects', {
-            headers: { Authorization: `Bearer ${apiKey}` },
-          })
-          if (billingResponse.ok) {
-            const billing = await billingResponse.json() as {
-              projects?: Array<{ project_id: string; data_storage_bytes_hour: number; compute_time_seconds: number }>
-            }
-            // On free tier, consumption exists but cost is $0
-            records.push({
-              platformId,
-              recordDate: new Date(),
-              periodStart,
-              periodEnd,
-              amount: totalCost.toFixed(2),
-              currency: 'USD',
-              costType: 'usage',
-              collectionMethod: 'api',
-              rawData: { projects: projectCount, consumption: billing.projects },
-              notes: `Neon: ${projectCount} project(s), free tier`,
-            })
-          }
-          else {
-            // Consumption endpoint might not be available on free tier
-            records.push({
-              platformId,
-              recordDate: new Date(),
-              periodStart,
-              periodEnd,
-              amount: '0.00',
-              currency: 'USD',
-              costType: 'usage',
-              collectionMethod: 'api',
-              rawData: { projects: projectCount },
-              notes: `Neon: ${projectCount} project(s), free tier (no consumption API access)`,
-            })
-          }
-        }
-        catch {
-          records.push({
-            platformId,
-            recordDate: new Date(),
-            periodStart,
-            periodEnd,
-            amount: '0.00',
-            currency: 'USD',
-            costType: 'usage',
-            collectionMethod: 'api',
-            rawData: { projects: projectCount },
-            notes: `Neon: ${projectCount} project(s), free tier`,
-          })
-        }
+        const email = user.auth_accounts?.[0]?.email || 'unknown'
+
+        records.push({
+          platformId,
+          recordDate: new Date(),
+          periodStart,
+          periodEnd,
+          amount: '0.00',
+          currency: 'USD',
+          costType: 'usage',
+          collectionMethod: 'api',
+          rawData: { plan: user.plan, email, projectsLimit: user.projects_limit },
+          notes: `Neon: ${user.plan} plan (${email})`,
+        })
       }
       catch (err) {
         errors.push(`Neon collector error: ${err instanceof Error ? err.message : String(err)}`)
