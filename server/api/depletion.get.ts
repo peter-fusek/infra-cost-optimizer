@@ -18,14 +18,7 @@ interface DepletionPlatform {
   riskLevel: 'ok' | 'warning' | 'critical' | 'depleted'
 }
 
-/**
- * Prepaid credit platforms with known balances.
- * These are manually maintained — update when credits are added.
- */
-const PREPAID_PLATFORMS: Record<string, { balance: number; updatedAt: string }> = {
-  'railway': { balance: 23.00, updatedAt: '2026-03-16' },
-  'anthropic': { balance: 29.68, updatedAt: '2026-03-16' },
-}
+import { getBalances } from './depletion.post'
 
 export default defineEventHandler(async () => {
   const db = useDB()
@@ -55,6 +48,8 @@ export default defineEventHandler(async () => {
     .groupBy(platforms.slug, platforms.name)
 
   const results: DepletionPlatform[] = []
+
+  const PREPAID_PLATFORMS = await getBalances()
 
   for (const [slug, prepaid] of Object.entries(PREPAID_PLATFORMS)) {
     const row = rows.find(r => r.platformSlug === slug)

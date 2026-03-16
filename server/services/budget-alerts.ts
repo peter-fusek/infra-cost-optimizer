@@ -22,6 +22,20 @@ async function sendAlertEmail(message: string, severity: string, config: Record<
   catch { /* email send failed silently */ }
 }
 
+async function sendWhatsApp(message: string, config: Record<string, string>) {
+  // Uses CallMeBot free WhatsApp API — requires one-time setup:
+  // Send "I allow callmebot to send me messages" to +34 644 71 85 38 on WhatsApp
+  // Then set WHATSAPP_PHONE and WHATSAPP_APIKEY env vars
+  const phone = config.whatsappPhone
+  const apikey = config.whatsappApikey
+  if (!phone || !apikey) return
+  try {
+    const encoded = encodeURIComponent(message)
+    await fetch(`https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encoded}&apikey=${apikey}`)
+  }
+  catch { /* WhatsApp send failed silently */ }
+}
+
 const THRESHOLDS = [
   { pct: 100, severity: 'critical' as const, label: 'exceeded' },
   { pct: 90, severity: 'warning' as const, label: 'at 90%' },
@@ -82,9 +96,10 @@ export async function checkBudgetAlerts(db: ReturnType<typeof import('../utils/d
       })
       newAlerts.push({ severity: threshold.severity, message, budgetId: budget.id })
 
-      // Send email for warning and critical alerts
+      // Send email + WhatsApp for warning and critical alerts
       if (config && (threshold.severity === 'warning' || threshold.severity === 'critical')) {
         await sendAlertEmail(message, threshold.severity, config)
+        await sendWhatsApp(`🚨 InfraCost ${threshold.severity}: ${message}`, config)
       }
 
       // Only create the highest threshold alert, not all lower ones

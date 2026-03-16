@@ -28,6 +28,8 @@ export default defineNuxtConfig({
     neonApiKey: process.env.NEON_API_KEY || '',
     tursoApiToken: process.env.TURSO_API_TOKEN || '',
     uptimeRobotApiKey: process.env.UPTIMEROBOT_API_KEY || '',
+    whatsappPhone: process.env.WHATSAPP_PHONE || '',
+    whatsappApikey: process.env.WHATSAPP_APIKEY || '',
     public: {
       eurUsdRate: 0.92, // EUR per 1 USD — update monthly
     },

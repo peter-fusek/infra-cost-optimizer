@@ -10,6 +10,7 @@ import { createResendCollector } from '../collectors/resend'
 import { createTursoCollector } from '../collectors/turso'
 import { createUptimeRobotCollector } from '../collectors/uptimerobot'
 import { checkBudgetAlerts } from '../services/budget-alerts'
+import { detectDrift } from '../services/drift-detector'
 
 export default defineTask({
   meta: {
@@ -111,6 +112,9 @@ export default defineTask({
     // Check budget alerts after collection
     const newAlerts = await checkBudgetAlerts(db, config as unknown as Record<string, string>)
 
-    return { result: results, alerts: newAlerts }
+    // Run drift detection
+    const drifts = await detectDrift(db, config as unknown as Record<string, string>)
+
+    return { result: results, alerts: newAlerts, drifts }
   },
 })
