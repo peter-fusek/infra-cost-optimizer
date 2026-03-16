@@ -36,6 +36,18 @@ interface MTDSummary {
 
 const { data: mtd, status, refresh } = await useFetch<MTDSummary>('/api/costs/mtd')
 
+interface Alert {
+  id: number
+  severity: string
+  status: string
+  alertType: string
+  message: string
+  budgetName: string | null
+  createdAt: string
+}
+
+const { data: activeAlerts, refresh: refreshAlerts } = await useFetch<Alert[]>('/api/alerts')
+
 const collecting = ref(false)
 
 async function triggerCollection() {
@@ -43,6 +55,7 @@ async function triggerCollection() {
   try {
     await $fetch('/api/collect/trigger', { method: 'POST', body: { trigger: 'manual' } })
     await refresh()
+    await refreshAlerts()
   }
   finally {
     collecting.value = false
@@ -140,6 +153,36 @@ const budgetColor = computed(() => {
           <UIcon name="i-lucide-server" class="size-5 text-[var(--ui-text-muted)]" />
         </div>
       </UCard>
+    </div>
+
+    <!-- Budget alerts -->
+    <div v-if="activeAlerts?.length" class="space-y-2">
+      <div
+        v-for="alert in activeAlerts"
+        :key="alert.id"
+        class="flex items-center justify-between rounded-lg border px-4 py-3"
+        :class="{
+          'border-[var(--ui-error)] bg-[var(--ui-error)]/5': alert.severity === 'critical',
+          'border-[var(--ui-warning)] bg-[var(--ui-warning)]/5': alert.severity === 'warning',
+          'border-[var(--ui-info)] bg-[var(--ui-info)]/5': alert.severity === 'info',
+        }"
+      >
+        <div class="flex items-center gap-3">
+          <UIcon
+            :name="alert.severity === 'critical' ? 'i-lucide-alert-triangle' : alert.severity === 'warning' ? 'i-lucide-alert-circle' : 'i-lucide-info'"
+            class="size-5 shrink-0"
+            :class="{
+              'text-[var(--ui-error)]': alert.severity === 'critical',
+              'text-[var(--ui-warning)]': alert.severity === 'warning',
+              'text-[var(--ui-info)]': alert.severity === 'info',
+            }"
+          />
+          <span class="text-sm">{{ alert.message }}</span>
+        </div>
+        <UBadge :color="alert.severity === 'critical' ? 'error' : alert.severity === 'warning' ? 'warning' : 'info'" variant="subtle" size="xs">
+          {{ alert.severity }}
+        </UBadge>
+      </div>
     </div>
 
     <!-- Platform breakdown -->

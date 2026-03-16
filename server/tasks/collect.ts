@@ -1,9 +1,14 @@
 import { eq, and, gte, lte } from 'drizzle-orm'
 import { platforms, services, costRecords, collectionRuns } from '../db/schema'
 import { getCurrentMonthRange } from '../collectors/base'
-import { createRenderCollector } from '../collectors/render'
-import { createRailwayCollector } from '../collectors/railway'
 import { createAnthropicCollector } from '../collectors/anthropic'
+import { createGcpCollector } from '../collectors/gcp'
+import { createNeonCollector } from '../collectors/neon'
+import { createRailwayCollector } from '../collectors/railway'
+import { createRenderCollector } from '../collectors/render'
+import { createResendCollector } from '../collectors/resend'
+import { createTursoCollector } from '../collectors/turso'
+import { checkBudgetAlerts } from '../services/budget-alerts'
 
 export default defineTask({
   meta: {
@@ -46,6 +51,21 @@ export default defineTask({
             if (!config.anthropicAdminApiKey) continue
             collector = createAnthropicCollector(config.anthropicAdminApiKey, platform.id, apiServiceId)
             break
+          case 'resend':
+            if (!config.resendApiKey) continue
+            collector = createResendCollector(config.resendApiKey, platform.id, apiServiceId)
+            break
+          case 'neon':
+            if (!config.neonApiKey) continue
+            collector = createNeonCollector(config.neonApiKey, platform.id)
+            break
+          case 'turso':
+            if (!config.tursoApiToken) continue
+            collector = createTursoCollector(config.tursoApiToken, platform.id)
+            break
+          case 'gcp':
+            collector = createGcpCollector('', platform.id, apiServiceId)
+            break
           default:
             continue
         }
@@ -83,6 +103,9 @@ export default defineTask({
       }
     }
 
-    return { result: results }
+    // Check budget alerts after collection
+    const newAlerts = await checkBudgetAlerts(db)
+
+    return { result: results, alerts: newAlerts }
   },
 })

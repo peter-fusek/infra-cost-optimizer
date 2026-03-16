@@ -24,6 +24,9 @@ export default defineNuxtConfig({
     anthropicAdminApiKey: process.env.ANTHROPIC_ADMIN_API_KEY || '',
     railwayApiToken: process.env.RAILWAY_API_TOKEN || '',
     renderApiKey: process.env.RENDER_API_KEY || '',
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    neonApiKey: process.env.NEON_API_KEY || '',
+    tursoApiToken: process.env.TURSO_API_TOKEN || '',
     public: {
       eurUsdRate: 0.92, // EUR per 1 USD — update monthly
     },

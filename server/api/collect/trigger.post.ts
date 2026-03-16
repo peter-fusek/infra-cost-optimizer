@@ -2,8 +2,13 @@ import { and, eq, gte, lte } from 'drizzle-orm'
 import { platforms, services, costRecords, collectionRuns } from '../../db/schema'
 import { getCurrentMonthRange } from '../../collectors/base'
 import { createAnthropicCollector } from '../../collectors/anthropic'
+import { createGcpCollector } from '../../collectors/gcp'
+import { createNeonCollector } from '../../collectors/neon'
 import { createRailwayCollector } from '../../collectors/railway'
 import { createRenderCollector } from '../../collectors/render'
+import { createResendCollector } from '../../collectors/resend'
+import { createTursoCollector } from '../../collectors/turso'
+import { checkBudgetAlerts } from '../../services/budget-alerts'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event) || {}
@@ -64,6 +69,30 @@ export default defineEventHandler(async (event) => {
           collector = createRenderCollector(config.renderApiKey, platform.id, svcMap)
           break
         }
+        case 'resend':
+          if (!config.resendApiKey) {
+            results.push({ platform: platform.slug, records: 0, errors: ['No API key configured'] })
+            continue
+          }
+          collector = createResendCollector(config.resendApiKey, platform.id, apiServiceId)
+          break
+        case 'neon':
+          if (!config.neonApiKey) {
+            results.push({ platform: platform.slug, records: 0, errors: ['No API key configured'] })
+            continue
+          }
+          collector = createNeonCollector(config.neonApiKey, platform.id)
+          break
+        case 'turso':
+          if (!config.tursoApiToken) {
+            results.push({ platform: platform.slug, records: 0, errors: ['No API token configured'] })
+            continue
+          }
+          collector = createTursoCollector(config.tursoApiToken, platform.id)
+          break
+        case 'gcp':
+          collector = createGcpCollector('', platform.id, apiServiceId)
+          break
         default:
           results.push({ platform: platform.slug, records: 0, errors: [`No collector implemented for ${platform.slug}`] })
           continue
@@ -117,5 +146,8 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return { collected: results, period: { start, end } }
+  // Check budget alerts after collection
+  const newAlerts = await checkBudgetAlerts(db)
+
+  return { collected: results, period: { start, end }, alerts: newAlerts }
 })
