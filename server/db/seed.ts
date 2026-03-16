@@ -26,21 +26,21 @@ export const serviceSeed = [
   // Render — Web services (actual names from billing)
   { platformSlug: 'render', name: 'homegrif_com', project: 'homegrif', serviceType: 'web', monthlyCostEstimate: '7.13' },
   { platformSlug: 'render', name: 'homegrif_com-test', project: 'homegrif', serviceType: 'web', monthlyCostEstimate: '7.13' },
-  { platformSlug: 'render', name: 'oncoteam-dashboard', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '4.14' },
-  { platformSlug: 'render', name: 'oncoteam-dashboard-test', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '4.14' },
+  { platformSlug: 'render', name: 'oncoteam-dashboard', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway 2026-03-15
+  { platformSlug: 'render', name: 'oncoteam-dashboard-test', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED
   { platformSlug: 'render', name: 'partners-cz-prod', project: 'partners', serviceType: 'web', monthlyCostEstimate: '13.18' },
   { platformSlug: 'render', name: 'partners-cz-test', project: 'partners', serviceType: 'web', monthlyCostEstimate: '7.13' },
   { platformSlug: 'render', name: 'scrabsnap', project: 'scrabsnap', serviceType: 'web', monthlyCostEstimate: '2.57' },
   { platformSlug: 'render', name: 'budgetco', project: 'budgetco', serviceType: 'web', monthlyCostEstimate: '2.14' },
   { platformSlug: 'render', name: 'contacts-refiner-dashboard', project: 'contacts-refiner', serviceType: 'web', monthlyCostEstimate: '2.23' },
   { platformSlug: 'render', name: 'instareaweb', project: 'instarea', serviceType: 'web', monthlyCostEstimate: '0.00' },
-  { platformSlug: 'render', name: 'oncoteam-landing', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' },
+  { platformSlug: 'render', name: 'oncoteam-landing', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway
 
   // Render — Databases (disk sizes from billing)
   { platformSlug: 'render', name: 'homegrif-db', project: 'homegrif', serviceType: 'database', monthlyCostEstimate: '6.42' },
   { platformSlug: 'render', name: 'homegrif-db-test', project: 'homegrif', serviceType: 'database', monthlyCostEstimate: '10.70' },
-  { platformSlug: 'render', name: 'oncoteam-db-prod', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '10.70' },
-  { platformSlug: 'render', name: 'oncoteam-db-test', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '10.70' },
+  { platformSlug: 'render', name: 'oncoteam-db-prod', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway
+  { platformSlug: 'render', name: 'oncoteam-db-test', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' }, // SUSPENDED
   { platformSlug: 'render', name: 'partners-db-prod', project: 'partners', serviceType: 'database', monthlyCostEstimate: '10.70' },
   { platformSlug: 'render', name: 'partners-db-test', project: 'partners', serviceType: 'database', monthlyCostEstimate: '10.70' },
   { platformSlug: 'render', name: 'scrabsnap-db', project: 'scrabsnap', serviceType: 'database', monthlyCostEstimate: '10.70' },
@@ -51,12 +51,15 @@ export const serviceSeed = [
   { platformSlug: 'render', name: 'homegrif-daily-report', project: 'homegrif', serviceType: 'cron', monthlyCostEstimate: '0.65' },
   { platformSlug: 'render', name: 'Pipeline Minutes', project: null, serviceType: 'ci_cd', monthlyCostEstimate: '0.00' },
 
-  // Railway — 2 projects
+  // Railway — 2 projects, 5 services (updated 2026-03-16 after oncoteam migration)
   { platformSlug: 'railway', name: 'oncofiles', project: 'oncofiles', serviceType: 'web', monthlyCostEstimate: '9.23' },
-  { platformSlug: 'railway', name: 'oncoteam-backend', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '2.60' },
+  { platformSlug: 'railway', name: 'oncoteam-backend', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '4.00' },
+  { platformSlug: 'railway', name: 'oncoteam-dashboard', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '3.00' },
+  { platformSlug: 'railway', name: 'oncoteam-landing', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '1.00' },
+  { platformSlug: 'railway', name: 'oncoteam-postgres', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '2.00' },
 
-  // Anthropic API
-  { platformSlug: 'anthropic', name: 'API Usage', project: null, serviceType: 'api_usage', monthlyCostEstimate: '65.00' },
+  // Anthropic API — includes autonomous agent (~$2/day = ~$60/mo) + manual usage (~$65/mo)
+  { platformSlug: 'anthropic', name: 'API Usage', project: null, serviceType: 'api_usage', monthlyCostEstimate: '125.00' },
 
   // Claude Max subscription
   { platformSlug: 'claude-max', name: 'Max Subscription', project: null, serviceType: 'subscription', monthlyCostEstimate: '196.00' },

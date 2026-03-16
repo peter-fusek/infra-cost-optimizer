@@ -35,6 +35,7 @@ interface RenderService {
   id: string
   name: string
   type: string
+  suspended?: string // 'not_suspended' | 'suspended'
   serviceDetails?: {
     plan?: string
     region?: string
@@ -111,7 +112,13 @@ export function createRenderCollector(
           let notes = ''
           const plan = (service.serviceDetails?.plan ?? '').toLowerCase()
 
-          if (service.type === 'static_site') {
+          // Suspended services cost $0
+          if (service.suspended === 'suspended') {
+            cost = 0
+            costType = 'usage'
+            notes = 'SUSPENDED'
+          }
+          else if (service.type === 'static_site') {
             cost = 0
             notes = 'Static site (free)'
           }
@@ -148,8 +155,9 @@ export function createRenderCollector(
 
         // Price each database
         for (const db of databases) {
+          const isSuspended = db.status === 'suspended'
           const diskGB = db.diskSizeGB || 1
-          const cost = RENDER_PRICING.db_basic_256mb + (diskGB * RENDER_PRICING.db_storage_per_gb)
+          const cost = isSuspended ? 0 : RENDER_PRICING.db_basic_256mb + (diskGB * RENDER_PRICING.db_storage_per_gb)
 
           records.push({
             platformId,
@@ -162,7 +170,7 @@ export function createRenderCollector(
             costType: 'subscription',
             collectionMethod: 'hybrid',
             rawData: { postgresId: db.id, diskSizeGB: diskGB, plan: db.plan, status: db.status },
-            notes: `${db.name}: PostgreSQL ${db.plan || 'basic-256mb'} + ${diskGB}GB disk`,
+            notes: `${db.name}: ${isSuspended ? 'SUSPENDED' : `PostgreSQL ${db.plan || 'basic-256mb'} + ${diskGB}GB disk`}`,
           })
         }
       }
