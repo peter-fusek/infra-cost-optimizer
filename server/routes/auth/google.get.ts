@@ -10,6 +10,7 @@ export default defineOAuthGoogleEventHandler({
       .filter(Boolean)
 
     if (allowed.length > 0 && !allowed.includes(user.email)) {
+      console.error(`[auth] Rejected login from ${user.email}`)
       throw createError({ statusCode: 403, message: 'Not authorized' })
     }
 
@@ -21,6 +22,10 @@ export default defineOAuthGoogleEventHandler({
       },
     })
 
+    return sendRedirect(event, '/')
+  },
+  async onError(event, error) {
+    console.error('[auth] OAuth error:', error)
     return sendRedirect(event, '/')
   },
 })

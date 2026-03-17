@@ -9,8 +9,8 @@ export default defineEventHandler(async (event) => {
 
   const path = getRequestURL(event).pathname
 
-  // Allow auth routes and internal Nitro task triggers
-  if (path.startsWith('/auth/') || path.startsWith('/_nitro/')) return
+  // Allow auth routes, session management, and internal Nitro task triggers
+  if (path.startsWith('/auth/') || path.startsWith('/api/_auth/') || path.startsWith('/_nitro/')) return
 
   const session = await getUserSession(event)
   if (!session.user) {
