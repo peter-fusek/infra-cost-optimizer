@@ -155,7 +155,15 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check budget alerts after collection
-  const newAlerts = await checkBudgetAlerts(db, config as unknown as Record<string, string>)
+  let newAlerts: Awaited<ReturnType<typeof checkBudgetAlerts>> = []
+  let alertsError: string | null = null
+  try {
+    newAlerts = await checkBudgetAlerts(db, config as unknown as Record<string, string>)
+  }
+  catch (err) {
+    alertsError = err instanceof Error ? err.message : String(err)
+    console.error('[trigger] Budget alerts check failed:', alertsError)
+  }
 
-  return { collected: results, period: { start, end }, alerts: newAlerts }
+  return { collected: results, period: { start, end }, alerts: newAlerts, alertsError }
 })

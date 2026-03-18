@@ -1,4 +1,4 @@
-import { boolean, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { boolean, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 // --- Enums ---
@@ -42,7 +42,9 @@ export const services = pgTable('services', {
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   deletedAt: timestamp('deleted_at'),
-})
+}, (t) => [
+  index('idx_services_platform').on(t.platformId),
+])
 
 // --- Cost Records ---
 
@@ -62,7 +64,11 @@ export const costRecords = pgTable('cost_records', {
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   deletedAt: timestamp('deleted_at'),
-})
+}, (t) => [
+  index('idx_cost_records_platform').on(t.platformId),
+  index('idx_cost_records_period').on(t.periodStart, t.periodEnd),
+  index('idx_cost_records_platform_period').on(t.platformId, t.periodStart, t.periodEnd),
+])
 
 // --- Budgets ---
 
@@ -154,7 +160,9 @@ export const collectionRuns = pgTable('collection_runs', {
   errorMessage: text('error_message'),
   startedAt: timestamp('started_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
-})
+}, (t) => [
+  index('idx_collection_runs_platform_started').on(t.platformId, t.startedAt),
+])
 
 // --- Relations ---
 

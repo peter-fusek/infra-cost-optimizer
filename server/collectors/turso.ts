@@ -41,6 +41,8 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
         let usageData: Record<string, unknown> = {}
         if (usageResponse.ok) {
           usageData = await usageResponse.json()
+        } else {
+          errors.push(`Turso usage API error ${usageResponse.status}: usage data not collected`)
         }
 
         // Get databases
@@ -53,6 +55,8 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
         if (dbResponse.ok) {
           const dbData = await dbResponse.json() as { databases: Array<{ name: string }> }
           dbCount = dbData.databases?.length ?? 0
+        } else {
+          errors.push(`Turso databases API error ${dbResponse.status}: database count not collected`)
         }
 
         // Free tier — $0 cost but track usage metrics

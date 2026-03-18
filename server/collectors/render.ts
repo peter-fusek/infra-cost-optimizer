@@ -189,7 +189,9 @@ export function createRenderCollector(
           }
         }
       }
-      catch { /* non-critical */ }
+      catch (err) {
+        errors.push(`Render: account identification failed: ${err instanceof Error ? err.message : String(err)}`)
+      }
 
       return { records, errors, accountIdentifier }
     },

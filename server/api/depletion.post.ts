@@ -20,12 +20,17 @@ export async function getBalances(): Promise<Record<string, CreditBalance>> {
     const data = await readFile(BALANCES_FILE, 'utf-8')
     return JSON.parse(data)
   }
-  catch {
-    // Defaults
-    return {
-      railway: { balance: 23.00, updatedAt: '2026-03-16' },
-      anthropic: { balance: 29.68, updatedAt: '2026-03-16' },
+  catch (err: unknown) {
+    // File not found is expected on first run — use defaults
+    if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+      return {
+        railway: { balance: 23.00, updatedAt: '2026-03-16' },
+        anthropic: { balance: 29.68, updatedAt: '2026-03-16' },
+      }
     }
+    // File exists but is corrupt or unreadable — surface the error
+    console.error('[depletion] Failed to read balances file:', err instanceof Error ? err.message : err)
+    throw createError({ statusCode: 500, message: 'Failed to read credit balances file' })
   }
 }
 

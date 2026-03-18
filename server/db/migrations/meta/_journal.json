@@ -15,6 +15,13 @@
       "when": 1773839513074,
       "tag": "0001_add-account-identifier",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773842513556,
+      "tag": "0002_add-indexes",
+      "breakpoints": true
     }
   ]
 }
