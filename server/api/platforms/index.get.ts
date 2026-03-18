@@ -1,50 +1,68 @@
-import { eq, sql } from 'drizzle-orm'
-import { platforms } from '../../db/schema'
+import { sql } from 'drizzle-orm'
 
 export default defineEventHandler(async () => {
   const db = useDB()
 
-  // Get platforms with service count
-  const platformRows = await db
-    .select({
-      id: platforms.id,
-      slug: platforms.slug,
-      name: platforms.name,
-      type: platforms.type,
-      collectionMethod: platforms.collectionMethod,
-      billingCycle: platforms.billingCycle,
-      accountIdentifier: platforms.accountIdentifier,
-      isActive: platforms.isActive,
-      serviceCount: sql<number>`(select count(*) from services where services.platform_id = ${platforms.id} and services.is_active = true)`,
-    })
-    .from(platforms)
-    .where(eq(platforms.isActive, true))
-    .orderBy(platforms.name)
-
-  // Get latest collection run per platform using DISTINCT ON
-  const latestRuns = await db.execute<{
-    platform_id: number
-    status: string
-    completed_at: string | null
-    records_collected: number | null
-    error_message: string | null
+  // Single query: platforms + service count + latest collection run
+  const rows = await db.execute<{
+    id: number
+    slug: string
+    name: string
+    type: string
+    collection_method: string
+    billing_cycle: string
+    account_identifier: string | null
+    is_active: boolean
+    service_count: number
+    last_collected_at: string | null
+    last_run_status: string | null
+    last_records_collected: number | null
+    last_error: string | null
   }>(sql`
-    select distinct on (platform_id)
-      platform_id, status, completed_at, records_collected, error_message
-    from collection_runs
-    order by platform_id, started_at desc
+    select
+      p.id,
+      p.slug,
+      p.name,
+      p.type,
+      p.collection_method,
+      p.billing_cycle,
+      p.account_identifier,
+      p.is_active,
+      coalesce(sc.cnt, 0)::int as service_count,
+      lr.completed_at as last_collected_at,
+      lr.status as last_run_status,
+      lr.records_collected as last_records_collected,
+      lr.error_message as last_error
+    from platforms p
+    left join (
+      select platform_id, count(*) as cnt
+      from services
+      where is_active = true
+      group by platform_id
+    ) sc on sc.platform_id = p.id
+    left join (
+      select distinct on (platform_id)
+        platform_id, status, completed_at, records_collected, error_message
+      from collection_runs
+      order by platform_id, started_at desc
+    ) lr on lr.platform_id = p.id
+    where p.is_active = true
+    order by p.name
   `)
 
-  const runMap = new Map(latestRuns.rows.map(r => [r.platform_id, r]))
-
-  return platformRows.map(p => {
-    const run = runMap.get(p.id)
-    return {
-      ...p,
-      lastCollectedAt: run?.completed_at ?? null,
-      lastRunStatus: run?.status ?? null,
-      lastRecordsCollected: run?.records_collected ?? null,
-      lastError: run?.error_message ?? null,
-    }
-  })
+  return rows.rows.map(p => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    type: p.type,
+    collectionMethod: p.collection_method,
+    billingCycle: p.billing_cycle,
+    accountIdentifier: p.account_identifier,
+    isActive: p.is_active,
+    serviceCount: p.service_count,
+    lastCollectedAt: p.last_collected_at,
+    lastRunStatus: p.last_run_status,
+    lastRecordsCollected: p.last_records_collected,
+    lastError: p.last_error,
+  }))
 })
