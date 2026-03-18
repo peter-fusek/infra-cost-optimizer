@@ -49,6 +49,19 @@ export default defineEventHandler(async () => {
     )
     .groupBy(costRecords.serviceId, costRecords.platformId, costRecords.costType, costRecords.collectionMethod)
 
+  // Get latest collection run per platform using DISTINCT ON
+  const latestRuns = await db.execute<{
+    platform_id: number
+    status: string
+    completed_at: string | null
+  }>(sql`
+    select distinct on (platform_id)
+      platform_id, status, completed_at
+    from collection_runs
+    order by platform_id, started_at desc
+  `)
+  const runMap = new Map(latestRuns.rows.map(r => [r.platform_id, r]))
+
   // Build service-level actuals map
   const actualMap = new Map<string, { total: number; count: number; costType: string; method: string }>()
   for (const a of actuals) {
@@ -92,6 +105,8 @@ export default defineEventHandler(async () => {
     totalActualMtdEur: number
     totalEomUsd: number
     totalEomEur: number
+    lastCollectedAt: string | null
+    lastRunStatus: string | null
     services: ServiceBreakdown[]
   }
 
@@ -99,6 +114,7 @@ export default defineEventHandler(async () => {
 
   for (const svc of allServices) {
     if (!platformGroups.has(svc.platformId)) {
+      const run = runMap.get(svc.platformId) as { completed_at: string | null; status: string } | undefined
       platformGroups.set(svc.platformId, {
         platformId: svc.platformId,
         slug: svc.platformSlug,
@@ -110,6 +126,8 @@ export default defineEventHandler(async () => {
         totalActualMtdEur: 0,
         totalEomUsd: 0,
         totalEomEur: 0,
+        lastCollectedAt: run?.completed_at ?? null,
+        lastRunStatus: run?.status ?? null,
         services: [],
       })
     }

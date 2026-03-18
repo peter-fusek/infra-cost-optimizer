@@ -78,6 +78,13 @@ export default defineTask({
 
         const result = await collector.collect(start, end)
 
+        // Persist account identifier if returned
+        if (result.accountIdentifier) {
+          await db.update(platforms).set({
+            accountIdentifier: result.accountIdentifier,
+          }).where(eq(platforms.id, platform.id))
+        }
+
         if (result.records.length > 0) {
           await db.delete(costRecords).where(
             and(

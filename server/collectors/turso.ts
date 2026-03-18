@@ -68,6 +68,8 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
           rawData: { org: orgSlug, databases: dbCount, usage: usageData },
           notes: `Turso: ${dbCount} database(s) in "${orgSlug}", free tier`,
         })
+
+        return { records, errors, accountIdentifier: orgSlug }
       }
       catch (err) {
         errors.push(`Turso collector error: ${err instanceof Error ? err.message : String(err)}`)

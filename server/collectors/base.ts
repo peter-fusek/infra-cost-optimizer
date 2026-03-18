@@ -15,6 +15,7 @@ export interface CostRecord {
 export interface CollectorResult {
   records: CostRecord[]
   errors: string[]
+  accountIdentifier?: string // email, org name, or team ID — persisted to platforms table
 }
 
 export interface BaseCollector {

@@ -178,7 +178,20 @@ export function createRenderCollector(
         errors.push(`Render collector error: ${err instanceof Error ? err.message : String(err)}`)
       }
 
-      return { records, errors }
+      // Identify account via /owners endpoint
+      let accountIdentifier: string | undefined
+      try {
+        const ownerRes = await fetch('https://api.render.com/v1/owners?limit=1', { headers, signal: AbortSignal.timeout(15_000) })
+        if (ownerRes.ok) {
+          const owners = await ownerRes.json() as Array<{ owner: { name: string; email: string } }>
+          if (owners[0]) {
+            accountIdentifier = owners[0].owner.email || owners[0].owner.name
+          }
+        }
+      }
+      catch { /* non-critical */ }
+
+      return { records, errors, accountIdentifier }
     },
   }
 }

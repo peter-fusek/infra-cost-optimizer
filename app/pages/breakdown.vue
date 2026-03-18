@@ -27,6 +27,8 @@ interface PlatformBreakdown {
   totalActualMtdEur: number
   totalEomUsd: number
   totalEomEur: number
+  lastCollectedAt: string | null
+  lastRunStatus: string | null
   services: ServiceBreakdown[]
 }
 
@@ -64,6 +66,18 @@ function varianceClass(v: number) {
   if (v > 5) return 'text-[var(--ui-error)]'
   if (v < -5) return 'text-[var(--ui-success)]'
   return 'text-[var(--ui-text-muted)]'
+}
+
+function timeAgo(dateStr: string | null): string {
+  if (!dateStr) return 'never'
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60_000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return `${days}d ago`
 }
 
 const typeIcons: Record<string, string> = {
@@ -131,6 +145,9 @@ const typeIcons: Record<string, string> = {
                 <UBadge :color="platform.type === 'ai' ? 'warning' : platform.type === 'hosting' ? 'primary' : 'neutral'" variant="subtle" size="xs" class="ml-2">
                   {{ platform.type }}
                 </UBadge>
+                <span v-if="platform.lastCollectedAt" class="ml-2 text-xs text-[var(--ui-text-dimmed)]">
+                  {{ timeAgo(platform.lastCollectedAt) }}
+                </span>
               </div>
             </div>
             <div class="flex gap-6 text-right text-sm">

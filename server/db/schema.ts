@@ -21,6 +21,7 @@ export const platforms = pgTable('platforms', {
   type: varchar({ length: 50 }).notNull(), // hosting, ai, database, email, sms, cloud, ci_cd, domain, banking
   collectionMethod: collectionMethodEnum('collection_method').notNull().default('manual'),
   billingCycle: varchar('billing_cycle', { length: 20 }).notNull().default('monthly'), // monthly, usage, annual
+  accountIdentifier: varchar('account_identifier', { length: 255 }), // email, org name, or team ID shown on dashboard
   apiConfigKey: varchar('api_config_key', { length: 100 }), // runtime config key for API credentials
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),

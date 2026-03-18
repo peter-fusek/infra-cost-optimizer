@@ -1,0 +1,1 @@
+ALTER TABLE "platforms" ADD COLUMN "account_identifier" varchar(255);

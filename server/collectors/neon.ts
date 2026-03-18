@@ -47,6 +47,8 @@ export function createNeonCollector(apiKey: string, platformId: number): BaseCol
           rawData: { plan: user.plan, email, projectsLimit: user.projects_limit },
           notes: `Neon: ${user.plan} plan (${email})`,
         })
+
+        return { records, errors, accountIdentifier: email }
       }
       catch (err) {
         errors.push(`Neon collector error: ${err instanceof Error ? err.message : String(err)}`)
