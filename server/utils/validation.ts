@@ -21,3 +21,9 @@ export function validateCostType(costType: string): void {
     throw createError({ statusCode: 400, message: `costType must be one of: ${VALID_COST_TYPES.join(', ')}` })
   }
 }
+
+export function parsePagination(query: Record<string, unknown>, defaultLimit = 100) {
+  const limit = Math.min(Math.max(parseInt(query.limit as string) || defaultLimit, 1), 500)
+  const offset = Math.max(parseInt(query.offset as string) || 0, 0)
+  return { limit, offset }
+}

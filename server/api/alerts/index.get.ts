@@ -19,8 +19,7 @@ export default defineEventHandler(async (event) => {
     conditions.push(eq(alerts.status, 'pending'))
   }
 
-  const limit = Math.min(Math.max(parseInt(query.limit as string) || 100, 1), 500)
-  const offset = Math.max(parseInt(query.offset as string) || 0, 0)
+  const { limit, offset } = parsePagination(query as Record<string, unknown>)
 
   const rows = await db
     .select({

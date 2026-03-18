@@ -12,8 +12,7 @@ export default defineEventHandler(async (event) => {
     ? new Date(query.end as string)
     : now
   const platformSlug = query.platform as string | undefined
-  const limit = Math.min(Math.max(parseInt(query.limit as string) || 200, 1), 500)
-  const offset = Math.max(parseInt(query.offset as string) || 0, 0)
+  const { limit, offset } = parsePagination(query as Record<string, unknown>, 200)
 
   return getCostHistory(db, startDate, endDate, platformSlug, limit, offset)
 })
