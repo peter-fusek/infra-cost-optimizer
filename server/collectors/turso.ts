@@ -17,6 +17,7 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
         // Get organizations
         const orgResponse = await fetch('https://api.turso.tech/v1/organizations', {
           headers: { Authorization: `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(15_000),
         })
 
         if (!orgResponse.ok) {
@@ -34,6 +35,7 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
         // Get org-level usage
         const usageResponse = await fetch(`https://api.turso.tech/v1/organizations/${orgSlug}/usage`, {
           headers: { Authorization: `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(15_000),
         })
 
         let usageData: Record<string, unknown> = {}
@@ -44,6 +46,7 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
         // Get databases
         const dbResponse = await fetch(`https://api.turso.tech/v1/organizations/${orgSlug}/databases`, {
           headers: { Authorization: `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(15_000),
         })
 
         let dbCount = 0

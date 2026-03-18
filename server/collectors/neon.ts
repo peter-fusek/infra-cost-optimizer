@@ -18,6 +18,7 @@ export function createNeonCollector(apiKey: string, platformId: number): BaseCol
         // Use /users/me to verify key and get plan info
         const response = await fetch('https://console.neon.tech/api/v2/users/me', {
           headers: { Authorization: `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(15_000),
         })
 
         if (!response.ok) {

@@ -28,6 +28,7 @@ export function createAnthropicCollector(apiKey: string, platformId: number, ser
               'x-api-key': apiKey,
               'anthropic-version': '2023-06-01',
             },
+            signal: AbortSignal.timeout(15_000),
           },
         )
 

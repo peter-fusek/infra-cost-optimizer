@@ -198,6 +198,8 @@ export async function getCostHistory(
   startDate: Date,
   endDate: Date,
   platformSlug?: string,
+  limit = 200,
+  offset = 0,
 ) {
   const conditions = [
     gte(costRecords.periodStart, startDate),
@@ -210,7 +212,7 @@ export async function getCostHistory(
     conditions.push(eq(platforms.slug, platformSlug))
   }
 
-  return db
+  const rows = await db
     .select({
       id: costRecords.id,
       platformSlug: platforms.slug,
@@ -228,4 +230,8 @@ export async function getCostHistory(
     .leftJoin(services, eq(costRecords.serviceId, services.id))
     .where(and(...conditions))
     .orderBy(costRecords.recordDate)
+    .limit(limit)
+    .offset(offset)
+
+  return rows
 }

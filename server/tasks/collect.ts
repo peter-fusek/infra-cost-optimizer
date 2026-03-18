@@ -110,10 +110,22 @@ export default defineTask({
     }
 
     // Check budget alerts after collection
-    const newAlerts = await checkBudgetAlerts(db, config as unknown as Record<string, string>)
+    let newAlerts: Awaited<ReturnType<typeof checkBudgetAlerts>> = []
+    try {
+      newAlerts = await checkBudgetAlerts(db, config as unknown as Record<string, string>)
+    }
+    catch (err) {
+      console.error('[collect] Budget alerts check failed:', err instanceof Error ? err.message : err)
+    }
 
     // Run drift detection
-    const drifts = await detectDrift(db, config as unknown as Record<string, string>)
+    let drifts: Awaited<ReturnType<typeof detectDrift>> = []
+    try {
+      drifts = await detectDrift(db, config as unknown as Record<string, string>)
+    }
+    catch (err) {
+      console.error('[collect] Drift detection failed:', err instanceof Error ? err.message : err)
+    }
 
     return { result: results, alerts: newAlerts, drifts }
   },

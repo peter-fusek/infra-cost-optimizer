@@ -22,6 +22,7 @@ export async function detectDrift(db: ReturnType<typeof import('../utils/db').us
     try {
       const response = await fetch('https://api.render.com/v1/services?limit=50', {
         headers: { Authorization: `Bearer ${config.renderApiKey}` },
+        signal: AbortSignal.timeout(15_000),
       })
       if (response.ok) {
         const data = await response.json() as Array<{ service: { name: string; type: string; suspended?: string; serviceDetails?: { plan?: string } } }>
@@ -84,6 +85,7 @@ export async function detectDrift(db: ReturnType<typeof import('../utils/db').us
           'Authorization': `Bearer ${config.railwayApiToken}`,
         },
         body: JSON.stringify({ query: '{ projects { edges { node { id name services { edges { node { id name } } } } } } }' }),
+        signal: AbortSignal.timeout(30_000),
       })
       if (response.ok) {
         const data = await response.json() as {

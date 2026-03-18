@@ -12,15 +12,15 @@
   "dependencies": {
     "@nuxt/ui": "^4.5.1",
     "drizzle-orm": "^0.45.1",
-    "nuxt": "^4.3.1",
+    "nuxt": "^4.4.2",
     "nuxt-auth-utils": "^0.5.29",
     "pg": "^8.20.0",
     "tailwindcss": "^4.2.1",
-    "vue": "latest"
+    "vue": "^3.5.30"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
-    "drizzle-kit": "^0.31.9"
+    "drizzle-kit": "^0.31.10"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -28,6 +28,10 @@
       "@parcel/watcher",
       "unrs-resolver",
       "vue-demi"
-    ]
+    ],
+    "overrides": {
+      "serialize-javascript": ">=7.0.3",
+      "esbuild": ">=0.25.0"
+    }
   }
 }

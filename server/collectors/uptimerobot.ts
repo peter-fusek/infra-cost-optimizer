@@ -38,6 +38,7 @@ export function createUptimeRobotCollector(apiKey: string, platformId: number): 
             format: 'json',
             all_time_uptime_ratio: '1',
           }),
+          signal: AbortSignal.timeout(15_000),
         })
 
         if (!response.ok) {

@@ -19,6 +19,9 @@ export default defineEventHandler(async (event) => {
     conditions.push(eq(alerts.status, 'pending'))
   }
 
+  const limit = Math.min(Math.max(parseInt(query.limit as string) || 100, 1), 500)
+  const offset = Math.max(parseInt(query.offset as string) || 0, 0)
+
   const rows = await db
     .select({
       id: alerts.id,
@@ -34,6 +37,8 @@ export default defineEventHandler(async (event) => {
     .leftJoin(budgets, eq(alerts.budgetId, budgets.id))
     .where(and(...conditions))
     .orderBy(desc(alerts.createdAt))
+    .limit(limit)
+    .offset(offset)
 
   return rows
 })

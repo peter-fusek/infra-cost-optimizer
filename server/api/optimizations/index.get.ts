@@ -4,8 +4,11 @@ import { optimizations, platforms, services } from '../../db/schema'
 const EUR_USD_RATE = 0.92
 function toEur(usd: number) { return Math.round(usd * EUR_USD_RATE * 100) / 100 }
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event)
   const db = useDB()
+  const limit = Math.min(Math.max(parseInt(query.limit as string) || 100, 1), 500)
+  const offset = Math.max(parseInt(query.offset as string) || 0, 0)
 
   const rows = await db
     .select({
@@ -27,6 +30,8 @@ export default defineEventHandler(async () => {
     .leftJoin(services, eq(optimizations.serviceId, services.id))
     .where(and(eq(optimizations.isActive, true), isNull(optimizations.deletedAt)))
     .orderBy(optimizations.estimatedSavings)
+    .limit(limit)
+    .offset(offset)
 
   // Reverse to get highest savings first (desc on numeric string)
   const sorted = rows.sort((a, b) => {

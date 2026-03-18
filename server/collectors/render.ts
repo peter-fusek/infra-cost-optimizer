@@ -73,7 +73,7 @@ export function createRenderCollector(
 
       try {
         // 1. Fetch web/static/cron services
-        const svcResponse = await fetch('https://api.render.com/v1/services?limit=50', { headers })
+        const svcResponse = await fetch('https://api.render.com/v1/services?limit=50', { headers, signal: AbortSignal.timeout(15_000) })
         if (!svcResponse.ok) {
           errors.push(`Render services API error ${svcResponse.status}: ${await svcResponse.text()}`)
           return { records, errors }
@@ -81,7 +81,7 @@ export function createRenderCollector(
         const servicesData = await svcResponse.json() as Array<{ service: RenderService }>
 
         // 2. Fetch PostgreSQL databases
-        const dbResponse = await fetch('https://api.render.com/v1/postgres?limit=50', { headers })
+        const dbResponse = await fetch('https://api.render.com/v1/postgres?limit=50', { headers, signal: AbortSignal.timeout(15_000) })
         let databases: RenderPostgres[] = []
         if (dbResponse.ok) {
           const dbData = await dbResponse.json() as Array<{ postgres: RenderPostgres }>

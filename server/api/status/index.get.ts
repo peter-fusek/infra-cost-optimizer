@@ -15,6 +15,7 @@ export default defineEventHandler(async () => {
       response_times: '1',
       response_times_limit: '1',
     }),
+    signal: AbortSignal.timeout(15_000),
   })
 
   if (!response.ok) {

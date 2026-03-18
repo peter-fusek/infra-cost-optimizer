@@ -52,6 +52,7 @@ export function createRailwayCollector(apiToken: string, platformId: number, ser
             'Authorization': `Bearer ${apiToken}`,
           },
           body: JSON.stringify({ query }),
+          signal: AbortSignal.timeout(30_000),
         })
 
         if (!response.ok) {

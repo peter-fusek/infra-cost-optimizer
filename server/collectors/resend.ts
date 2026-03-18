@@ -17,6 +17,7 @@ export function createResendCollector(apiKey: string, platformId: number, servic
         // Verify API key by listing domains
         const response = await fetch('https://api.resend.com/domains', {
           headers: { Authorization: `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(15_000),
         })
 
         if (!response.ok) {

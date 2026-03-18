@@ -5,7 +5,7 @@ import { getMTDSummary } from './cost-aggregation'
 async function sendAlertEmail(message: string, severity: string, config: Record<string, string>) {
   if (!config.resendApiKey) return
   try {
-    await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,7 +17,11 @@ async function sendAlertEmail(message: string, severity: string, config: Record<
         subject: `[InfraCost ${severity.toUpperCase()}] ${message.substring(0, 80)}`,
         text: message,
       }),
+      signal: AbortSignal.timeout(15_000),
     })
+    if (!response.ok) {
+      console.error(`[budget-alerts] Email send returned ${response.status}: ${await response.text()}`)
+    }
   }
   catch (err) {
     console.error('[budget-alerts] Email send failed:', err instanceof Error ? err.message : err)
@@ -33,7 +37,12 @@ async function sendWhatsApp(message: string, config: Record<string, string>) {
   if (!phone || !apikey) return
   try {
     const encoded = encodeURIComponent(message)
-    await fetch(`https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encoded}&apikey=${apikey}`)
+    const response = await fetch(`https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encoded}&apikey=${apikey}`, {
+      signal: AbortSignal.timeout(15_000),
+    })
+    if (!response.ok) {
+      console.error(`[budget-alerts] WhatsApp send returned ${response.status}: ${await response.text()}`)
+    }
   }
   catch (err) {
     console.error('[budget-alerts] WhatsApp send failed:', err instanceof Error ? err.message : err)
