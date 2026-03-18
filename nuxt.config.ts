@@ -16,8 +16,10 @@ export default defineNuxtConfig({
       link: [
         { rel: 'canonical', href: 'https://infracost.eu' },
       ],
-      // GA4 measurement tag — will be set after registration
-      // script: [{ src: 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX', async: true }],
+      script: [
+        { src: 'https://www.googletagmanager.com/gtag/js?id=G-QVK3BVWXWV', async: true },
+        { innerHTML: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-QVK3BVWXWV')" },
+      ],
     },
   },
   nitro: {
