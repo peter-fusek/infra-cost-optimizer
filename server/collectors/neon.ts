@@ -44,7 +44,12 @@ export function createNeonCollector(apiKey: string, platformId: number): BaseCol
           currency: 'USD',
           costType: 'usage',
           collectionMethod: 'api',
-          rawData: { plan: user.plan, email, projectsLimit: user.projects_limit },
+          rawData: {
+            plan: user.plan,
+            email,
+            projectsLimit: user.projects_limit,
+            activeSecondsLimit: user.active_seconds_limit,
+          },
           notes: `Neon: ${user.plan} plan (${email})`,
         })
 

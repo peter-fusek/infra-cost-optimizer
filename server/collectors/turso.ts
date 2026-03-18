@@ -59,6 +59,13 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
           errors.push(`Turso databases API error ${dbResponse.status}: database count not collected`)
         }
 
+        // Extract normalized usage metrics from Turso API response
+        const orgUsage = (usageData as { organization?: { usage?: { rows_read?: number; rows_written?: number; storage_bytes?: number } } })
+          ?.organization?.usage
+        const rowsRead = orgUsage?.rows_read ?? 0
+        const rowsWritten = orgUsage?.rows_written ?? 0
+        const storageBytes = orgUsage?.storage_bytes ?? 0
+
         // Free tier — $0 cost but track usage metrics
         records.push({
           platformId,
@@ -69,7 +76,14 @@ export function createTursoCollector(apiKey: string, platformId: number): BaseCo
           currency: 'USD',
           costType: 'usage',
           collectionMethod: 'api',
-          rawData: { org: orgSlug, databases: dbCount, usage: usageData },
+          rawData: {
+            org: orgSlug,
+            databases: dbCount,
+            rowsRead,
+            rowsWritten,
+            storageBytes,
+            usage: usageData,
+          },
           notes: `Turso: ${dbCount} database(s) in "${orgSlug}", free tier`,
         })
 
