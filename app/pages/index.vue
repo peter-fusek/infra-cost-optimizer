@@ -6,6 +6,7 @@ useSeoMeta({
   ogDescription: 'Automated cost tracking across Render, Railway, Anthropic API, Neon, Turso, Resend, UptimeRobot, GCP. Budget alerts, depletion forecasts, drift detection.',
   ogType: 'website',
   ogSiteName: 'InfraCost',
+  ogUrl: 'https://infracost.eu',
   twitterCard: 'summary_large_image',
 })
 
@@ -18,6 +19,7 @@ useHead({
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
         name: 'InfraCost',
+        url: 'https://infracost.eu',
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'Web',
         description: 'Infrastructure cost tracking dashboard for cloud and AI platforms with automated collectors, budget alerts, and depletion forecasts.',
