@@ -106,6 +106,11 @@ function groupIcon(type: string) {
   if (type === 'database') return 'i-lucide-database'
   return 'i-lucide-box'
 }
+
+const platformTooltips: Record<string, string> = {
+  'anthropic': 'Anthropic Claude API — programmatic access for agents, MCP servers, and automations. Pay-per-token from prepaid credits.',
+  'claude-max': 'Claude Max — subscription for claude.ai web/app. Includes Extra Usage Credits for heavy use months.',
+}
 </script>
 
 <template>
@@ -177,6 +182,12 @@ function groupIcon(type: string) {
               <div class="flex items-center gap-2">
                 <UIcon :name="groupIcon(group.type)" class="size-4 text-[var(--ui-text-muted)]" />
                 <span class="font-semibold">{{ group.label }}</span>
+                <UIcon
+                  v-if="platformTooltips[group.key]"
+                  name="i-lucide-info"
+                  class="size-3.5 text-[var(--ui-text-dimmed)] cursor-help"
+                  :title="platformTooltips[group.key]"
+                />
                 <UBadge
                   :color="group.type === 'ai' ? 'warning' : group.type === 'hosting' ? 'primary' : group.type === 'project' ? 'info' : 'neutral'"
                   variant="subtle"

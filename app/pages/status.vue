@@ -119,6 +119,10 @@ function statusIcon(s: string) {
                 <p class="text-sm font-mono">{{ monitor.uptimeRatio }}%</p>
                 <p class="text-[10px] text-[var(--ui-text-dimmed)]">uptime</p>
               </div>
+              <div>
+                <p class="text-sm font-mono">{{ Math.round(monitor.checkInterval / 60) }}m</p>
+                <p class="text-[10px] text-[var(--ui-text-dimmed)]">interval</p>
+              </div>
               <UBadge :color="(statusColor(monitor.status) as any)" variant="subtle" size="sm">
                 {{ monitor.status.replace('_', ' ') }}
               </UBadge>
@@ -126,6 +130,10 @@ function statusIcon(s: string) {
           </div>
         </UCard>
       </div>
+
+      <p class="text-xs text-[var(--ui-text-dimmed)] text-right">
+        Checked: {{ new Date().toLocaleString() }} &middot; Live from UptimeRobot API
+      </p>
     </template>
 
     <div v-else class="py-8 text-center text-[var(--ui-text-muted)]">

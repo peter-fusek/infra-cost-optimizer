@@ -90,6 +90,9 @@ const totalSavings = computed(() => {
               <UBadge :color="(statusColors[opt.status] as any) || 'neutral'" variant="solid" size="xs">
                 {{ opt.status }}
               </UBadge>
+              <span v-if="opt.implementedAt" class="text-xs text-[var(--ui-text-dimmed)]">
+                {{ new Date(opt.implementedAt).toLocaleDateString() }}
+              </span>
               <UBadge v-if="opt.platformName" variant="outline" size="xs" color="neutral">
                 {{ opt.platformName }}
               </UBadge>
