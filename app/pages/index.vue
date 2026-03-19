@@ -194,23 +194,26 @@ const platforms = [
     </section>
 
     <!-- Feature Cards -->
-    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <UCard v-for="feature in features" :key="feature.title">
-        <div class="flex gap-4">
-          <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[var(--ui-primary)]/10">
-            <UIcon :name="feature.icon" class="size-5 text-[var(--ui-primary)]" />
+    <section>
+      <h2 class="sr-only">Features</h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <UCard v-for="feature in features" :key="feature.title">
+          <div class="flex gap-4">
+            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[var(--ui-primary)]/10">
+              <UIcon :name="feature.icon" class="size-5 text-[var(--ui-primary)]" />
+            </div>
+            <div>
+              <h3 class="font-semibold">{{ feature.title }}</h3>
+              <p class="mt-1 text-sm text-[var(--ui-text-muted)]">{{ feature.description }}</p>
+            </div>
           </div>
-          <div>
-            <h3 class="font-semibold">{{ feature.title }}</h3>
-            <p class="mt-1 text-sm text-[var(--ui-text-muted)]">{{ feature.description }}</p>
-          </div>
-        </div>
-      </UCard>
+        </UCard>
+      </div>
     </section>
 
     <!-- Tracked Platforms -->
     <section class="text-center">
-      <p class="text-sm font-medium uppercase tracking-wider text-[var(--ui-text-dimmed)]">Tracking costs across</p>
+      <h2 class="text-sm font-medium uppercase tracking-wider text-[var(--ui-text-muted)]">Tracking costs across</h2>
       <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
         <UBadge
           v-for="p in platforms"
