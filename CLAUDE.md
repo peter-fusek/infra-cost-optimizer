@@ -18,6 +18,8 @@
 ## Conventions
 - All DB queries use Drizzle ORM. Raw SQL via db.execute<T>(sql`...`) for complex queries (DISTINCT ON, CTEs)
 - Input validation: server/utils/validation.ts (parseId, parseAmount, parsePagination)
+- Notifications: server/utils/notifications.ts (sendAlertEmail, sendWhatsApp) — shared by budget + plan limit alerts
+- Plan limits: server/utils/plan-limits.ts (PLAN_LIMITS, extractUsage, formatUsage, formatLimit)
 - EUR conversion: hardcoded EUR_USD_RATE = 0.92 (update monthly)
 - Fetch timeouts: AbortSignal.timeout(15_000) on all external calls, 30s for Railway GraphQL
 - Error handling: always surface errors in errors[] array, never empty catch blocks
