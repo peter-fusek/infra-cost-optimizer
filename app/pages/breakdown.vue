@@ -147,20 +147,20 @@ const platformTooltips: Record<string, string> = {
     <template v-else-if="data">
       <!-- Grand totals -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <UCard>
-          <p class="text-sm text-[var(--ui-text-muted)]">Monthly Estimate</p>
-          <p class="text-2xl font-semibold">${{ fmt(data.grandTotal.estimateUsd) }}</p>
-          <p class="text-sm text-[var(--ui-text-dimmed)]">€{{ fmt(data.grandTotal.estimateEur) }}</p>
+        <UCard class="metric-card-mtd">
+          <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Monthly Estimate</p>
+          <p class="mt-1 text-2xl font-bold tabular-nums">${{ fmt(data.grandTotal.estimateUsd) }}</p>
+          <p class="mt-0.5 text-sm tabular-nums text-[var(--ui-text-dimmed)]">€{{ fmt(data.grandTotal.estimateEur) }}</p>
         </UCard>
-        <UCard>
-          <p class="text-sm text-[var(--ui-text-muted)]">MTD Actual</p>
-          <p class="text-2xl font-semibold">${{ fmt(data.grandTotal.mtdUsd) }}</p>
-          <p class="text-sm text-[var(--ui-text-dimmed)]">€{{ fmt(data.grandTotal.mtdEur) }}</p>
+        <UCard class="metric-card-eom">
+          <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">MTD Actual</p>
+          <p class="mt-1 text-2xl font-bold tabular-nums">${{ fmt(data.grandTotal.mtdUsd) }}</p>
+          <p class="mt-0.5 text-sm tabular-nums text-[var(--ui-text-dimmed)]">€{{ fmt(data.grandTotal.mtdEur) }}</p>
         </UCard>
-        <UCard>
-          <p class="text-sm text-[var(--ui-text-muted)]">EOM Projected</p>
-          <p class="text-2xl font-semibold">${{ fmt(data.grandTotal.eomUsd) }}</p>
-          <p class="text-sm text-[var(--ui-text-dimmed)]">€{{ fmt(data.grandTotal.eomEur) }}</p>
+        <UCard class="metric-card-budget">
+          <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">EOM Projected</p>
+          <p class="mt-1 text-2xl font-bold tabular-nums">${{ fmt(data.grandTotal.eomUsd) }}</p>
+          <p class="mt-0.5 text-sm tabular-nums text-[var(--ui-text-dimmed)]">€{{ fmt(data.grandTotal.eomEur) }}</p>
         </UCard>
       </div>
 
