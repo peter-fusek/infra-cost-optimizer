@@ -7,7 +7,9 @@ useSeoMeta({
   ogType: 'website',
   ogSiteName: 'InfraCost',
   ogUrl: 'https://infracost.eu',
+  ogImage: 'https://infracost.eu/og-image.png',
   twitterCard: 'summary_large_image',
+  twitterImage: 'https://infracost.eu/og-image.png',
 })
 
 useHead({

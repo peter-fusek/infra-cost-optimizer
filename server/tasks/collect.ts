@@ -11,6 +11,7 @@ import { createResendCollector } from '../collectors/resend'
 import { createTursoCollector } from '../collectors/turso'
 import { createUptimeRobotCollector } from '../collectors/uptimerobot'
 import { checkBudgetAlerts } from '../services/budget-alerts'
+import { checkPlanLimitAlerts } from '../services/plan-limit-alerts'
 import { detectDrift } from '../services/drift-detector'
 
 export default defineTask({
@@ -139,6 +140,17 @@ export default defineTask({
       console.error('[collect] Budget alerts check failed:', alertsError)
     }
 
+    // Check plan limit alerts
+    let limitAlerts: Awaited<ReturnType<typeof checkPlanLimitAlerts>> = []
+    let limitAlertsError: string | null = null
+    try {
+      limitAlerts = await checkPlanLimitAlerts(db, config as unknown as Record<string, string>)
+    }
+    catch (err) {
+      limitAlertsError = err instanceof Error ? err.message : String(err)
+      console.error('[collect] Plan limit alerts check failed:', limitAlertsError)
+    }
+
     // Run drift detection
     let drifts: Awaited<ReturnType<typeof detectDrift>> = []
     let driftError: string | null = null
@@ -150,6 +162,6 @@ export default defineTask({
       console.error('[collect] Drift detection failed:', driftError)
     }
 
-    return { result: results, alerts: newAlerts, drifts, errors: { alertsError, driftError } }
+    return { result: results, alerts: newAlerts, limitAlerts, drifts, errors: { alertsError, limitAlertsError, driftError } }
   },
 })

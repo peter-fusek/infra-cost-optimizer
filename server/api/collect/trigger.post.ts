@@ -11,6 +11,7 @@ import { createResendCollector } from '../../collectors/resend'
 import { createTursoCollector } from '../../collectors/turso'
 import { createUptimeRobotCollector } from '../../collectors/uptimerobot'
 import { checkBudgetAlerts } from '../../services/budget-alerts'
+import { checkPlanLimitAlerts } from '../../services/plan-limit-alerts'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event) || {}
@@ -137,5 +138,16 @@ export default defineEventHandler(async (event) => {
     console.error('[trigger] Budget alerts check failed:', alertsError)
   }
 
-  return { collected: results, period: { start, end }, alerts: newAlerts, alertsError }
+  // Check plan limit alerts
+  let limitAlerts: Awaited<ReturnType<typeof checkPlanLimitAlerts>> = []
+  let limitAlertsError: string | null = null
+  try {
+    limitAlerts = await checkPlanLimitAlerts(db, config as unknown as Record<string, string>)
+  }
+  catch (err) {
+    limitAlertsError = err instanceof Error ? err.message : String(err)
+    console.error('[trigger] Plan limit alerts check failed:', limitAlertsError)
+  }
+
+  return { collected: results, period: { start, end }, alerts: newAlerts, limitAlerts, errors: { alertsError, limitAlertsError } }
 })
