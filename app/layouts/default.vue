@@ -64,6 +64,7 @@ watch(() => route.path, () => {
             <UButton
               class="lg:hidden"
               :icon="mobileMenuOpen ? 'i-lucide-x' : 'i-lucide-menu'"
+              :aria-label="mobileMenuOpen ? 'Close menu' : 'Open menu'"
               variant="ghost"
               size="sm"
               @click="mobileMenuOpen = !mobileMenuOpen"

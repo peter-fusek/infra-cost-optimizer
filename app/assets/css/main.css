@@ -92,8 +92,8 @@
   font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
 }
 
-/* Navigation pill active state */
+/* Navigation pill active state — emerald-700 for WCAG AA 4.5:1 on white */
 .nav-pill-active {
-  background: rgba(16, 185, 129, 0.1);
-  color: rgb(16, 185, 129);
+  background: rgba(4, 120, 87, 0.1);
+  color: rgb(4, 120, 87);
 }
