@@ -47,13 +47,13 @@ function progressPct(p: DepletionPlatform) {
 <template>
   <div class="space-y-6">
     <div>
-      <h2 class="text-2xl font-bold">Credit Depletion Tracker</h2>
+      <h1 class="text-2xl font-bold">Credit Depletion Tracker</h1>
       <p class="text-sm text-[var(--ui-text-muted)]">
         Prepaid platform balances &middot; burn rate &middot; days until empty
       </p>
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8">
+    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
       <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
     </div>
 

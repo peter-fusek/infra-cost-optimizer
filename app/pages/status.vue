@@ -47,7 +47,7 @@ function statusIcon(s: string) {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold">Service Status</h2>
+        <h1 class="text-2xl font-bold">Service Status</h1>
         <p class="text-sm text-[var(--ui-text-muted)]">
           Live monitoring via UptimeRobot &middot; 5min checks
         </p>
@@ -60,7 +60,7 @@ function statusIcon(s: string) {
       />
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8">
+    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
       <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
     </div>
 

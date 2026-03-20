@@ -62,7 +62,7 @@ async function onSubmit(event: FormSubmitEvent<FormState>) {
 <template>
   <div class="mx-auto max-w-xl space-y-6">
     <div>
-      <h2 class="text-2xl font-bold">Manual Cost Entry</h2>
+      <h1 class="text-2xl font-bold">Manual Cost Entry</h1>
       <p class="text-sm text-[var(--ui-text-muted)]">Record costs for platforms without API collection</p>
     </div>
 

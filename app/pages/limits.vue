@@ -59,13 +59,13 @@ function barColor(level: string) {
 <template>
   <div class="space-y-6">
     <div>
-      <h2 class="text-2xl font-bold">Plan Limits</h2>
+      <h1 class="text-2xl font-bold">Plan Limits</h1>
       <p class="text-sm text-[var(--ui-text-muted)]">
         Free tier usage across {{ data?.platforms?.length ?? 0 }} platforms
       </p>
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8">
+    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
       <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
     </div>
 

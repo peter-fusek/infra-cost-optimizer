@@ -87,7 +87,7 @@ function getProbe(slug: string): ProbeResult | null {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold">Platforms</h2>
+        <h1 class="text-2xl font-bold">Platforms</h1>
         <p class="text-sm text-[var(--ui-text-muted)]">All monitored infrastructure platforms &middot; {{ platformList?.length ?? 0 }} active</p>
       </div>
       <div v-if="apiStatus" class="flex items-center gap-2 text-sm">
@@ -100,7 +100,7 @@ function getProbe(slug: string): ProbeResult | null {
       <UIcon v-else-if="apiStatusLoading === 'pending'" name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-dimmed)]" />
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8">
+    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
       <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
     </div>
 

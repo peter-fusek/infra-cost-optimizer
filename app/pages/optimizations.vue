@@ -58,7 +58,7 @@ const totalSavings = computed(() => {
   <div class="space-y-6">
     <div class="flex items-start justify-between">
       <div>
-        <h2 class="text-2xl font-bold">Optimization Opportunities</h2>
+        <h1 class="text-2xl font-bold">Optimization Opportunities</h1>
         <p class="text-sm text-[var(--ui-text-muted)]">Actionable cost savings with pros &amp; cons</p>
       </div>
       <UCard v-if="items?.length" class="text-right">
@@ -68,7 +68,7 @@ const totalSavings = computed(() => {
       </UCard>
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8">
+    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
       <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
     </div>
 

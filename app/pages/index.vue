@@ -8,6 +8,7 @@ useSeoMeta({
   ogSiteName: 'InfraCost',
   ogUrl: 'https://infracost.eu',
   ogImage: 'https://infracost.eu/og-image.png',
+  ogImageAlt: 'InfraCost — infrastructure cost tracking dashboard',
   twitterCard: 'summary_large_image',
   twitterImage: 'https://infracost.eu/og-image.png',
 })
@@ -80,7 +81,7 @@ interface Alert {
   createdAt: string
 }
 
-const { data: activeAlerts, refresh: refreshAlerts } = await useFetch<Alert[]>('/api/alerts')
+const { data: activeAlerts, refresh: refreshAlerts } = await useFetch<Alert[]>('/api/alerts', { lazy: true })
 
 const collecting = ref(false)
 
@@ -343,7 +344,7 @@ const platforms = [
           </div>
         </template>
 
-        <div v-if="status === 'pending'" class="flex justify-center py-8">
+        <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
           <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
         </div>
 
@@ -356,13 +357,13 @@ const platforms = [
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-[var(--ui-text-muted)]">
-                <th class="pb-3 font-medium">Platform</th>
-                <th class="pb-3 font-medium">Type</th>
-                <th class="pb-3 text-right font-medium">MTD (USD)</th>
-                <th class="pb-3 text-right font-medium">MTD (EUR)</th>
-                <th class="pb-3 text-right font-medium">EOM Est. (USD)</th>
-                <th class="pb-3 text-right font-medium">EOM Est. (EUR)</th>
-                <th class="pb-3 text-right font-medium">Records</th>
+                <th scope="col" class="pb-3 font-medium">Platform</th>
+                <th scope="col" class="pb-3 font-medium">Type</th>
+                <th scope="col" class="pb-3 text-right font-medium">MTD (USD)</th>
+                <th scope="col" class="pb-3 text-right font-medium">MTD (EUR)</th>
+                <th scope="col" class="pb-3 text-right font-medium">EOM Est. (USD)</th>
+                <th scope="col" class="pb-3 text-right font-medium">EOM Est. (EUR)</th>
+                <th scope="col" class="pb-3 text-right font-medium">Records</th>
               </tr>
             </thead>
             <tbody>

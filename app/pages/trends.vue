@@ -68,13 +68,13 @@ function fmt(n: number) {
 <template>
   <div class="space-y-6">
     <div>
-      <h2 class="text-2xl font-bold">Cost Trends</h2>
+      <h1 class="text-2xl font-bold">Cost Trends</h1>
       <p class="text-sm text-[var(--ui-text-muted)]">
         Month-over-month spending &middot; 1 USD = {{ data?.eurUsdRate ?? 0.92 }} EUR
       </p>
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8">
+    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
       <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
     </div>
 
