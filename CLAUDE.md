@@ -24,7 +24,7 @@
 - Fetch timeouts: AbortSignal.timeout(15_000) on all external calls, 30s for Railway GraphQL
 - Error handling: always surface errors in errors[] array, never empty catch blocks
 - Collection dedup: delete old records before inserting new per platform+period
-- No test suite — rely on build + typecheck + manual verification
+- Test suite: `pnpm test` — vitest, tests in tests/ directory
 
 ## Deploy
 - Render free tier, auto-deploy on push to main
