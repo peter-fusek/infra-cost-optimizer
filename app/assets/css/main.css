@@ -3,6 +3,12 @@
 
 /* === InfraCost — Precision Financial Theme === */
 
+/* WCAG AA contrast fix: darken muted/dimmed text for 4.5:1+ on white */
+:root {
+  --ui-text-muted: oklch(48% 0.046 257.417);   /* was 55.4% (~4.6:1), now ~6.2:1 */
+  --ui-text-dimmed: oklch(55% 0.04 256.788);    /* was 70.4% (~2.6:1), now ~4.6:1 */
+}
+
 /* Satoshi for headings, system stack for body, JetBrains Mono for data */
 @font-face {
   font-family: 'Satoshi';

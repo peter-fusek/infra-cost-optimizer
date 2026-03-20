@@ -58,7 +58,7 @@ const totalSavings = computed(() => {
   <div class="space-y-6">
     <div class="flex items-start justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Optimization Opportunities</h1>
+        <h1 class="font-display text-2xl font-black tracking-tight">Optimization Opportunities</h1>
         <p class="text-sm text-[var(--ui-text-muted)]">Actionable cost savings with pros &amp; cons</p>
       </div>
       <UCard v-if="items?.length" class="text-right">
@@ -83,7 +83,7 @@ const totalSavings = computed(() => {
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="font-semibold">{{ opt.title }}</h3>
+              <h3 class="font-display font-bold">{{ opt.title }}</h3>
               <UBadge :color="(effortColors[opt.effort] as any) || 'neutral'" variant="subtle" size="xs">
                 {{ opt.effort }}
               </UBadge>

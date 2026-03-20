@@ -87,7 +87,7 @@ function getProbe(slug: string): ProbeResult | null {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Platforms</h1>
+        <h1 class="font-display text-2xl font-black tracking-tight">Platforms</h1>
         <p class="text-sm text-[var(--ui-text-muted)]">All monitored infrastructure platforms &middot; {{ platformList?.length ?? 0 }} active</p>
       </div>
       <div v-if="apiStatus" class="flex items-center gap-2 text-sm">
@@ -125,7 +125,7 @@ function getProbe(slug: string): ProbeResult | null {
                 v-else-if="apiStatusLoading === 'pending'"
                 class="size-2.5 rounded-full bg-[var(--ui-text-dimmed)] animate-pulse shrink-0"
               />
-              <h3 class="font-semibold">{{ platform.name }}</h3>
+              <h3 class="font-display font-bold">{{ platform.name }}</h3>
             </div>
             <UBadge :color="(typeColors[platform.type] as any) || 'neutral'" variant="subtle" size="sm">
               {{ platform.type }}

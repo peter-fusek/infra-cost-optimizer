@@ -47,7 +47,7 @@ function statusIcon(s: string) {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Service Status</h1>
+        <h1 class="font-display text-2xl font-black tracking-tight">Service Status</h1>
         <p class="text-sm text-[var(--ui-text-muted)]">
           Live monitoring via UptimeRobot &middot; 5min checks
         </p>

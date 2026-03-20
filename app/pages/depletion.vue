@@ -47,7 +47,7 @@ function progressPct(p: DepletionPlatform) {
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">Credit Depletion Tracker</h1>
+      <h1 class="font-display text-2xl font-black tracking-tight">Credit Depletion Tracker</h1>
       <p class="text-sm text-[var(--ui-text-muted)]">
         Prepaid platform balances &middot; burn rate &middot; days until empty
       </p>
@@ -74,7 +74,7 @@ function progressPct(p: DepletionPlatform) {
                   }"
                 />
                 <div>
-                  <h3 class="text-lg font-semibold">{{ p.name }}</h3>
+                  <h3 class="font-display text-lg font-bold">{{ p.name }}</h3>
                   <UBadge :color="(riskColor(p.riskLevel) as any)" variant="subtle" size="xs">
                     {{ p.riskLevel === 'ok' ? 'Healthy' : p.riskLevel }}
                   </UBadge>

@@ -117,7 +117,7 @@ const platformTooltips: Record<string, string> = {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Cost Breakdown</h1>
+        <h1 class="font-display text-2xl font-black tracking-tight">Cost Breakdown</h1>
         <p class="text-sm text-[var(--ui-text-muted)]">
           Per-service detail &middot; {{ data?.monthProgress ?? 0 }}% through month &middot; 1 USD = {{ data?.eurUsdRate ?? 0.92 }} EUR
         </p>

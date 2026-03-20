@@ -59,7 +59,7 @@ function barColor(level: string) {
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">Plan Limits</h1>
+      <h1 class="font-display text-2xl font-black tracking-tight">Plan Limits</h1>
       <p class="text-sm text-[var(--ui-text-muted)]">
         Free tier usage across {{ data?.platforms?.length ?? 0 }} platforms
       </p>
@@ -86,7 +86,7 @@ function barColor(level: string) {
                     'text-[var(--ui-text-dimmed)]': platform.worstRisk === 'unknown',
                   }"
                 />
-                <h3 class="text-lg font-semibold">{{ platform.name }}</h3>
+                <h3 class="font-display text-lg font-bold">{{ platform.name }}</h3>
               </div>
               <UBadge :color="(riskColor(platform.worstRisk) as any)" variant="subtle" size="sm">
                 {{ riskLabel(platform.worstRisk) }}

@@ -68,7 +68,7 @@ function fmt(n: number) {
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">Cost Trends</h1>
+      <h1 class="font-display text-2xl font-black tracking-tight">Cost Trends</h1>
       <p class="text-sm text-[var(--ui-text-muted)]">
         Month-over-month spending &middot; 1 USD = {{ data?.eurUsdRate ?? 0.92 }} EUR
       </p>
@@ -82,7 +82,7 @@ function fmt(n: number) {
       <!-- Bar chart -->
       <UCard>
         <template #header>
-          <h3 class="font-semibold">Monthly Total Cost</h3>
+          <h3 class="font-display font-bold">Monthly Total Cost</h3>
         </template>
 
         <div class="flex items-end gap-4 h-64">
@@ -143,7 +143,7 @@ function fmt(n: number) {
       <!-- Monthly detail table -->
       <UCard>
         <template #header>
-          <h3 class="font-semibold">Monthly Breakdown</h3>
+          <h3 class="font-display font-bold">Monthly Breakdown</h3>
         </template>
 
         <div class="overflow-x-auto">

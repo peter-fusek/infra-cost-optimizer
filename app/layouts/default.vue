@@ -12,6 +12,7 @@ const navigation = [
   { label: 'Limits', icon: 'i-lucide-gauge', to: '/limits' },
   { label: 'Status', icon: 'i-lucide-activity', to: '/status' },
   { label: 'Platforms', icon: 'i-lucide-server', to: '/platforms' },
+  { label: 'Budgets', icon: 'i-lucide-wallet', to: '/budgets' },
   { label: 'Manual Entry', icon: 'i-lucide-pencil', to: '/manual' },
 ]
 

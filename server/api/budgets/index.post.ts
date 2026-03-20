@@ -1,0 +1,34 @@
+import { budgets } from '../../db/schema'
+
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const { name, monthlyLimit, platformId, alertAt50, alertAt75, alertAt90, alertAt100 } = body as {
+    name: string
+    monthlyLimit: number
+    platformId?: number | null
+    alertAt50?: boolean
+    alertAt75?: boolean
+    alertAt90?: boolean
+    alertAt100?: boolean
+  }
+
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    throw createError({ statusCode: 400, message: 'name is required' })
+  }
+  if (!monthlyLimit || typeof monthlyLimit !== 'number' || monthlyLimit <= 0) {
+    throw createError({ statusCode: 400, message: 'monthlyLimit must be a positive number' })
+  }
+
+  const db = useDB()
+  const [created] = await db.insert(budgets).values({
+    name: name.trim(),
+    monthlyLimit: String(monthlyLimit),
+    platformId: platformId || null,
+    alertAt50: alertAt50 ?? true,
+    alertAt75: alertAt75 ?? true,
+    alertAt90: alertAt90 ?? true,
+    alertAt100: alertAt100 ?? true,
+  }).returning()
+
+  return { budget: created }
+})
