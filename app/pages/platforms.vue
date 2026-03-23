@@ -15,6 +15,16 @@ interface Platform {
   lastError: string | null
 }
 
+interface PlatformService {
+  id: number
+  name: string
+  serviceType: string
+  project: string | null
+  monthlyCostEstimate: string | null
+  metadata: Record<string, unknown> | null
+  isActive: boolean
+}
+
 interface ProbeResult {
   slug: string
   reachable: boolean
@@ -34,6 +44,47 @@ interface StatusResponse {
 
 const { data: platformList, status } = await useFetch<Platform[]>('/api/platforms')
 const { data: apiStatus, status: apiStatusLoading } = await useFetch<StatusResponse>('/api/platforms/status', { lazy: true })
+
+// Expandable card state
+const expanded = ref<Set<string>>(new Set())
+const serviceCache = ref<Record<string, PlatformService[]>>({})
+const loadingServices = ref<Set<string>>(new Set())
+
+async function toggle(slug: string) {
+  if (expanded.value.has(slug)) {
+    expanded.value.delete(slug)
+    return
+  }
+  expanded.value.add(slug)
+  if (!serviceCache.value[slug]) {
+    loadingServices.value.add(slug)
+    try {
+      const data = await $fetch<{ services: PlatformService[] }>(`/api/platforms/${slug}`)
+      serviceCache.value[slug] = data.services
+    } catch {
+      serviceCache.value[slug] = []
+    } finally {
+      loadingServices.value.delete(slug)
+    }
+  }
+}
+
+function fmtCost(val: string | null): string {
+  if (!val) return '—'
+  const n = parseFloat(val)
+  return n === 0 ? '$0' : `$${n.toFixed(2)}`
+}
+
+const typeIcons: Record<string, string> = {
+  web: 'i-lucide-globe',
+  database: 'i-lucide-database',
+  subscription: 'i-lucide-credit-card',
+  cron: 'i-lucide-clock',
+  ci_cd: 'i-lucide-git-branch',
+  api_usage: 'i-lucide-zap',
+  usage: 'i-lucide-activity',
+  cloud_run: 'i-lucide-cloud',
+}
 
 const typeColors: Record<string, string> = {
   hosting: 'primary',
@@ -105,11 +156,21 @@ function getProbe(slug: string): ProbeResult | null {
     </div>
 
     <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <UCard v-for="platform in platformList" :key="platform.id">
+      <UCard
+        v-for="platform in platformList"
+        :key="platform.id"
+        class="cursor-pointer transition-shadow hover:shadow-md"
+        :class="{ 'sm:col-span-2 lg:col-span-3': expanded.has(platform.slug) }"
+        @click="toggle(platform.slug)"
+      >
         <div class="space-y-3">
           <!-- Header with API status dot -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
+              <UIcon
+                :name="expanded.has(platform.slug) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                class="size-4 text-[var(--ui-text-muted)] shrink-0"
+              />
               <span
                 v-if="getProbe(platform.slug)"
                 class="size-2.5 rounded-full shrink-0"
@@ -178,6 +239,50 @@ function getProbe(slug: string): ProbeResult | null {
             >
               {{ platform.lastRunStatus }}
             </UBadge>
+          </div>
+
+          <!-- Expanded services detail -->
+          <div v-if="expanded.has(platform.slug)" class="border-t border-[var(--ui-border)] pt-3 mt-1" @click.stop>
+            <div v-if="loadingServices.has(platform.slug)" class="flex justify-center py-4">
+              <UIcon name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-muted)]" />
+            </div>
+            <template v-else-if="serviceCache[platform.slug]?.length">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-[var(--ui-text-muted)]">
+                    <th class="pb-2 font-medium">Service</th>
+                    <th class="pb-2 font-medium">Type</th>
+                    <th class="pb-2 font-medium">Project</th>
+                    <th class="pb-2 text-right font-medium">Est. Monthly</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="svc in serviceCache[platform.slug]" :key="svc.id" class="border-t border-[var(--ui-border-muted)]">
+                    <td class="py-1.5">
+                      <div class="flex items-center gap-1.5">
+                        <UIcon :name="typeIcons[svc.serviceType] ?? 'i-lucide-box'" class="size-3.5 text-[var(--ui-text-muted)]" />
+                        <span>{{ svc.name }}</span>
+                      </div>
+                    </td>
+                    <td class="py-1.5">
+                      <UBadge variant="subtle" size="xs" color="neutral">{{ svc.serviceType }}</UBadge>
+                    </td>
+                    <td class="py-1.5 text-[var(--ui-text-muted)]">{{ svc.project || '—' }}</td>
+                    <td class="py-1.5 text-right font-mono">{{ fmtCost(svc.monthlyCostEstimate) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="mt-3 flex justify-end">
+                <NuxtLink
+                  :to="{ path: '/breakdown', query: { groupBy: 'platform', platform: platform.slug } }"
+                  class="text-xs text-[var(--ui-primary)] hover:underline flex items-center gap-1"
+                >
+                  <UIcon name="i-lucide-arrow-right" class="size-3" />
+                  View in breakdown
+                </NuxtLink>
+              </div>
+            </template>
+            <p v-else class="text-sm text-[var(--ui-text-muted)] py-2">No active services</p>
           </div>
         </div>
       </UCard>

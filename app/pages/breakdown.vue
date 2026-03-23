@@ -50,13 +50,16 @@ interface BreakdownResponse {
   projects: string[]
 }
 
-const groupBy = ref<'platform' | 'project'>('platform')
+const route = useRoute()
+const groupBy = ref<'platform' | 'project'>((route.query.groupBy as 'platform' | 'project') || 'platform')
+const highlightPlatform = ref<string | null>((route.query.platform as string) || null)
+
 const { data, status, refresh } = await useFetch<BreakdownResponse>('/api/costs/breakdown', {
   query: { groupBy },
   watch: [groupBy],
 })
 
-const expanded = ref<Set<string>>(new Set())
+const expanded = ref<Set<string>>(new Set(highlightPlatform.value ? [highlightPlatform.value] : []))
 
 function toggle(key: string) {
   if (expanded.value.has(key)) {
@@ -106,6 +109,18 @@ function groupIcon(type: string) {
   if (type === 'database') return 'i-lucide-database'
   return 'i-lucide-box'
 }
+
+// Auto-scroll to highlighted platform on mount
+onMounted(() => {
+  if (highlightPlatform.value) {
+    nextTick(() => {
+      const el = document.getElementById(`breakdown-${highlightPlatform.value}`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Clear highlight after scroll animation
+      setTimeout(() => { highlightPlatform.value = null }, 2000)
+    })
+  }
+})
 
 const platformTooltips: Record<string, string> = {
   'anthropic': 'Anthropic Claude API — programmatic access for agents, MCP servers, and automations. Pay-per-token from prepaid credits.',
@@ -168,8 +183,10 @@ const platformTooltips: Record<string, string> = {
       <div class="space-y-3">
         <UCard
           v-for="group in data.groups"
+          :id="`breakdown-${group.key}`"
           :key="group.key"
-          class="cursor-pointer"
+          class="cursor-pointer transition-shadow hover:shadow-md"
+          :class="{ 'ring-2 ring-[var(--ui-primary)] ring-opacity-50': highlightPlatform === group.key }"
           @click="toggle(group.key)"
         >
           <!-- Group header row -->

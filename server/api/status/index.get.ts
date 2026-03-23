@@ -12,6 +12,7 @@ export default defineEventHandler(async () => {
       api_key: config.uptimeRobotApiKey,
       format: 'json',
       all_time_uptime_ratio: '1',
+      custom_uptime_ratios: '7-30-90',
       response_times: '1',
       response_times_limit: '1',
     }),
@@ -31,6 +32,7 @@ export default defineEventHandler(async () => {
       status: number
       interval: number
       all_time_uptime_ratio: string
+      custom_uptime_ratio?: string
       response_times?: Array<{ value: number }>
     }>
   }
@@ -43,16 +45,22 @@ export default defineEventHandler(async () => {
     0: 'paused', 1: 'not_checked', 2: 'up', 8: 'seems_down', 9: 'down',
   }
 
-  const monitors = (data.monitors || []).map(m => ({
-    id: m.id,
-    name: m.friendly_name,
-    url: m.url,
-    status: statusMap[m.status] || 'unknown',
-    isUp: m.status === 2,
-    uptimeRatio: parseFloat(m.all_time_uptime_ratio || '0'),
-    responseTime: m.response_times?.[0]?.value ?? null,
-    checkInterval: m.interval,
-  }))
+  const monitors = (data.monitors || []).map(m => {
+    const customRatios = m.custom_uptime_ratio?.split('-').map(Number) ?? []
+    return {
+      id: m.id,
+      name: m.friendly_name,
+      url: m.url,
+      status: statusMap[m.status] || 'unknown',
+      isUp: m.status === 2,
+      uptimeRatio: parseFloat(m.all_time_uptime_ratio || '0'),
+      uptime7d: customRatios[0] ?? null,
+      uptime30d: customRatios[1] ?? null,
+      uptime90d: customRatios[2] ?? null,
+      responseTime: m.response_times?.[0]?.value ?? null,
+      checkInterval: m.interval,
+    }
+  })
 
   const upCount = monitors.filter(m => m.isUp).length
 

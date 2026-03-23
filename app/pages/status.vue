@@ -6,6 +6,9 @@ interface Monitor {
   status: string
   isUp: boolean
   uptimeRatio: number
+  uptime7d: number | null
+  uptime30d: number | null
+  uptime90d: number | null
   responseTime: number | null
   checkInterval: number
 }
@@ -40,6 +43,16 @@ function statusIcon(s: string) {
   if (s === 'down' || s === 'seems_down') return 'i-lucide-alert-circle'
   if (s === 'paused') return 'i-lucide-pause-circle'
   return 'i-lucide-help-circle'
+}
+
+const expanded = ref<Set<number>>(new Set())
+
+function toggle(id: number) {
+  if (expanded.value.has(id)) {
+    expanded.value.delete(id)
+  } else {
+    expanded.value.add(id)
+  }
 }
 </script>
 
@@ -91,12 +104,21 @@ function statusIcon(s: string) {
 
       <!-- Monitor cards -->
       <div class="space-y-3">
-        <UCard v-for="monitor in data.monitors" :key="monitor.id">
+        <UCard
+          v-for="monitor in data.monitors"
+          :key="monitor.id"
+          class="cursor-pointer transition-shadow hover:shadow-md"
+          @click="toggle(monitor.id)"
+        >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <UIcon
+                :name="expanded.has(monitor.id) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                class="size-4 text-[var(--ui-text-muted)] shrink-0"
+              />
+              <UIcon
                 :name="statusIcon(monitor.status)"
-                class="size-5"
+                class="size-5 shrink-0"
                 :class="{
                   'text-[var(--ui-success)]': monitor.status === 'up',
                   'text-[var(--ui-error)]': monitor.status === 'down' || monitor.status === 'seems_down',
@@ -126,6 +148,54 @@ function statusIcon(s: string) {
               <UBadge :color="(statusColor(monitor.status) as any)" variant="subtle" size="sm">
                 {{ monitor.status.replace('_', ' ') }}
               </UBadge>
+            </div>
+          </div>
+
+          <!-- Expanded detail -->
+          <div v-if="expanded.has(monitor.id)" class="border-t border-[var(--ui-border)] pt-3 mt-3" @click.stop>
+            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm sm:grid-cols-4">
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">Endpoint</p>
+                <a :href="monitor.url" target="_blank" rel="noopener" class="text-[var(--ui-primary)] hover:underline break-all">
+                  {{ monitor.url }}
+                </a>
+              </div>
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">Check Interval</p>
+                <p>Every {{ Math.round(monitor.checkInterval / 60) }} minutes</p>
+              </div>
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">Monitor ID</p>
+                <p class="font-mono text-[var(--ui-text-muted)]">{{ monitor.id }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">Status</p>
+                <p :class="{
+                  'text-[var(--ui-success)]': monitor.status === 'up',
+                  'text-[var(--ui-error)]': monitor.status === 'down' || monitor.status === 'seems_down',
+                }">
+                  {{ monitor.status.replace('_', ' ') }}
+                </p>
+              </div>
+            </div>
+            <!-- Uptime breakdown -->
+            <div v-if="monitor.uptime7d !== null" class="mt-3 flex gap-6 text-sm">
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">7-day uptime</p>
+                <p class="font-mono">{{ monitor.uptime7d }}%</p>
+              </div>
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">30-day uptime</p>
+                <p class="font-mono">{{ monitor.uptime30d }}%</p>
+              </div>
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">90-day uptime</p>
+                <p class="font-mono">{{ monitor.uptime90d }}%</p>
+              </div>
+              <div>
+                <p class="text-xs text-[var(--ui-text-muted)]">All-time uptime</p>
+                <p class="font-mono">{{ monitor.uptimeRatio }}%</p>
+              </div>
             </div>
           </div>
         </UCard>
