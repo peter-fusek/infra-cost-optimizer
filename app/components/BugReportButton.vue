@@ -63,16 +63,7 @@ async function submit() {
       method: 'POST',
       body: {
         description: description.value.trim(),
-        context: context.value
-          ? {
-              url: context.value.url,
-              title: context.value.title,
-              userAgent: context.value.userAgent,
-              viewport: context.value.viewport,
-              timestamp: context.value.timestamp,
-              consoleErrors: context.value.consoleErrors,
-            }
-          : null,
+        context: context.value,
         screenshotDataUrl: screenshotDataUrl.value,
       },
     })
@@ -99,6 +90,11 @@ function close() {
   screenshotDataUrl.value = null
   clearCapturedErrors()
 }
+
+watch(open, (isOpen) => {
+  if (isOpen) document.addEventListener('paste', handlePaste)
+  else document.removeEventListener('paste', handlePaste)
+})
 </script>
 
 <template>
@@ -115,8 +111,7 @@ function close() {
 
     <UModal v-model:open="open" title="Report a Bug" :ui="{ content: 'max-w-xl' }">
       <template #body>
-        <div class="space-y-4" @paste="handlePaste">
-          <!-- Screenshot area -->
+        <div class="space-y-4">
           <div class="rounded-lg border border-[var(--ui-border)] overflow-hidden bg-[var(--ui-bg-elevated)]">
             <div v-if="screenshotDataUrl" class="relative">
               <img
