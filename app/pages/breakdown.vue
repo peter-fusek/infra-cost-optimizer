@@ -62,24 +62,9 @@ const { data, status, refresh } = await useFetch<BreakdownResponse>('/api/costs/
 })
 
 const { loggedIn } = useUserSession()
-const toast = useToast()
+const { collecting, triggerCollection } = useCollectionTrigger(() => refresh())
 
 const expanded = ref<Set<string>>(new Set(highlightPlatform.value ? [highlightPlatform.value] : []))
-const collecting = ref(false)
-
-async function triggerCollection() {
-  collecting.value = true
-  try {
-    await $fetch('/api/collect/trigger', { method: 'POST' })
-    toast.add({ title: 'Collection started', description: 'Data will refresh shortly', color: 'success' })
-    // Refresh data after a short delay for the collection to complete
-    setTimeout(() => refresh(), 5000)
-  } catch (err: any) {
-    toast.add({ title: 'Error', description: err?.data?.message || 'Failed to trigger collection', color: 'error' })
-  } finally {
-    collecting.value = false
-  }
-}
 
 function toggle(key: string) {
   if (expanded.value.has(key)) {
@@ -97,29 +82,6 @@ function varianceClass(v: number) {
   if (v > 5) return 'text-[var(--ui-error)]'
   if (v < -5) return 'text-[var(--ui-success)]'
   return 'text-[var(--ui-text-muted)]'
-}
-
-function timeAgo(dateStr: string | null): string {
-  if (!dateStr) return 'never'
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60_000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  const days = Math.floor(hrs / 24)
-  return `${days}d ago`
-}
-
-const typeIcons: Record<string, string> = {
-  web: 'i-lucide-globe',
-  database: 'i-lucide-database',
-  subscription: 'i-lucide-credit-card',
-  cron: 'i-lucide-clock',
-  ci_cd: 'i-lucide-git-branch',
-  api_usage: 'i-lucide-zap',
-  usage: 'i-lucide-activity',
-  cloud_run: 'i-lucide-cloud',
 }
 
 function groupIcon(type: string) {

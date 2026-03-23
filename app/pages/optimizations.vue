@@ -76,12 +76,10 @@ const statusColors: Record<string, string> = {
 }
 
 const totalSavings = computed(() => {
-  const source = activeFilter.value === 'all'
-    ? items.value?.filter(i => i.status === 'suggested' || i.status === 'approved')
-    : filteredItems.value.filter(i => i.status === 'suggested' || i.status === 'approved')
+  const actionable = items.value?.filter(i => i.status === 'suggested' || i.status === 'approved') ?? []
   return {
-    usd: source?.reduce((s, i) => s + i.estimatedSavingsUsd, 0) ?? 0,
-    eur: source?.reduce((s, i) => s + i.estimatedSavingsEur, 0) ?? 0,
+    usd: actionable.reduce((s, i) => s + i.estimatedSavingsUsd, 0),
+    eur: actionable.reduce((s, i) => s + i.estimatedSavingsEur, 0),
   }
 })
 </script>
@@ -111,7 +109,7 @@ const totalSavings = computed(() => {
       >
         {{ f.charAt(0).toUpperCase() + f.slice(1) }}
         <template #trailing>
-          <UBadge :color="activeFilter === f ? 'neutral' : 'neutral'" variant="subtle" size="xs">
+          <UBadge color="neutral" variant="subtle" size="xs">
             {{ filterCounts[f] }}
           </UBadge>
         </template>

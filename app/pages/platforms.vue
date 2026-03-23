@@ -75,17 +75,6 @@ function fmtCost(val: string | null): string {
   return n === 0 ? '$0' : `$${n.toFixed(2)}`
 }
 
-const typeIcons: Record<string, string> = {
-  web: 'i-lucide-globe',
-  database: 'i-lucide-database',
-  subscription: 'i-lucide-credit-card',
-  cron: 'i-lucide-clock',
-  ci_cd: 'i-lucide-git-branch',
-  api_usage: 'i-lucide-zap',
-  usage: 'i-lucide-activity',
-  cloud_run: 'i-lucide-cloud',
-}
-
 const typeColors: Record<string, string> = {
   hosting: 'primary',
   ai: 'warning',
@@ -97,18 +86,6 @@ const typeColors: Record<string, string> = {
   domain: 'neutral',
   banking: 'neutral',
   monitoring: 'info',
-}
-
-function timeAgo(dateStr: string | null): string {
-  if (!dateStr) return 'never'
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60_000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  const days = Math.floor(hrs / 24)
-  return `${days}d ago`
 }
 
 function freshnessColor(dateStr: string | null, status: string | null): string {

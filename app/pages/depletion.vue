@@ -21,21 +21,7 @@ interface DepletionResponse {
 
 const { data, status, refresh } = await useFetch<DepletionResponse>('/api/depletion')
 const { loggedIn } = useUserSession()
-const toast = useToast()
-const collecting = ref(false)
-
-async function triggerCollection() {
-  collecting.value = true
-  try {
-    await $fetch('/api/collect/trigger', { method: 'POST' })
-    toast.add({ title: 'Collection started', description: 'Data will refresh shortly', color: 'success' })
-    setTimeout(() => refresh(), 5000)
-  } catch (err: any) {
-    toast.add({ title: 'Error', description: err?.data?.message || 'Failed to trigger collection', color: 'error' })
-  } finally {
-    collecting.value = false
-  }
-}
+const { collecting, triggerCollection } = useCollectionTrigger(() => refresh())
 
 function riskColor(level: string) {
   if (level === 'depleted') return 'error'

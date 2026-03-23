@@ -29,11 +29,14 @@ export function createResendCollector(apiKey: string, platformId: number, servic
 
         const domains = await response.json() as { data: Array<{ id: string; name: string; status: string }> }
 
-        // Count emails sent this month via GET /emails (paginated, capped)
+        // Count emails sent this month + today via GET /emails (paginated, capped)
         // Max 10 pages to prevent API overdrawing (covers up to ~1000 emails)
         const MAX_EMAIL_PAGES = 10
         let emailsThisMonth = 0
+        let emailsToday = 0
         const monthStart = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1)
+        const todayStart = new Date()
+        todayStart.setHours(0, 0, 0, 0)
         try {
           let hasMore = true
           let lastId: string | undefined
@@ -55,8 +58,10 @@ export function createResendCollector(apiKey: string, platformId: number, servic
             }
             if (!emailsData.data?.length) break
             for (const email of emailsData.data) {
-              if (new Date(email.created_at) >= monthStart) {
+              const created = new Date(email.created_at)
+              if (created >= monthStart) {
                 emailsThisMonth++
+                if (created >= todayStart) emailsToday++
               } else {
                 hasMore = false
                 break
@@ -71,27 +76,6 @@ export function createResendCollector(apiKey: string, platformId: number, servic
           }
         } catch (err) {
           errors.push(`Resend: email count failed: ${err instanceof Error ? err.message : String(err)}`)
-        }
-
-        // Count emails sent today — single page, no pagination needed
-        const todayStart = new Date()
-        todayStart.setHours(0, 0, 0, 0)
-        let emailsToday = 0
-        try {
-          const emailsRes = await fetch('https://api.resend.com/emails', {
-            headers: authHeaders,
-            signal: AbortSignal.timeout(15_000),
-          })
-          if (emailsRes.ok) {
-            const emailsData = await emailsRes.json() as {
-              data: Array<{ id: string; created_at: string }>
-            }
-            emailsToday = (emailsData.data || []).filter(
-              (e: { created_at: string }) => new Date(e.created_at) >= todayStart,
-            ).length
-          }
-        } catch {
-          // Non-critical — daily count is best-effort
         }
 
         // Resend doesn't expose billing — report as $0 (free tier)
