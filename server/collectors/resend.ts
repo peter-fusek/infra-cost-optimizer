@@ -29,15 +29,17 @@ export function createResendCollector(apiKey: string, platformId: number, servic
 
         const domains = await response.json() as { data: Array<{ id: string; name: string; status: string }> }
 
-        // Count emails sent this month via GET /emails (paginated)
+        // Count emails sent this month via GET /emails (paginated, capped)
+        // Max 10 pages to prevent API overdrawing (covers up to ~1000 emails)
+        const MAX_EMAIL_PAGES = 10
         let emailsThisMonth = 0
         const monthStart = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1)
         try {
-          // Resend GET /emails doesn't support date filters — paginate and count
-          // Limited to recent emails; stop when we hit emails before this month
           let hasMore = true
           let lastId: string | undefined
-          while (hasMore) {
+          let pages = 0
+          while (hasMore && pages < MAX_EMAIL_PAGES) {
+            pages++
             const url = new URL('https://api.resend.com/emails')
             if (lastId) url.searchParams.set('last_id', lastId)
             const emailsRes = await fetch(url.toString(), {
@@ -51,10 +53,7 @@ export function createResendCollector(apiKey: string, platformId: number, servic
             const emailsData = await emailsRes.json() as {
               data: Array<{ id: string; created_at: string }>
             }
-            if (!emailsData.data?.length) {
-              hasMore = false
-              break
-            }
+            if (!emailsData.data?.length) break
             for (const email of emailsData.data) {
               if (new Date(email.created_at) >= monthStart) {
                 emailsThisMonth++
@@ -63,19 +62,23 @@ export function createResendCollector(apiKey: string, platformId: number, servic
                 break
               }
             }
-            lastId = emailsData.data[emailsData.data.length - 1]?.id
+            if (hasMore) {
+              lastId = emailsData.data[emailsData.data.length - 1]?.id
+            }
+          }
+          if (pages >= MAX_EMAIL_PAGES && hasMore) {
+            errors.push(`Resend: email count capped at ${MAX_EMAIL_PAGES} pages (${emailsThisMonth}+ emails)`)
           }
         } catch (err) {
           errors.push(`Resend: email count failed: ${err instanceof Error ? err.message : String(err)}`)
         }
 
-        // Count emails sent today
+        // Count emails sent today — single page, no pagination needed
         const todayStart = new Date()
         todayStart.setHours(0, 0, 0, 0)
         let emailsToday = 0
         try {
-          const url = 'https://api.resend.com/emails'
-          const emailsRes = await fetch(url, {
+          const emailsRes = await fetch('https://api.resend.com/emails', {
             headers: authHeaders,
             signal: AbortSignal.timeout(15_000),
           })

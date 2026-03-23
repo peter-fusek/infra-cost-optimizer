@@ -85,12 +85,17 @@ const { data: activeAlerts, refresh: refreshAlerts } = await useFetch<Alert[]>('
 
 const collecting = ref(false)
 
+const toast = useToast()
+
 async function triggerCollection() {
   collecting.value = true
   try {
     await $fetch('/api/collect/trigger', { method: 'POST', body: { trigger: 'manual' } })
     await refresh()
     await refreshAlerts()
+  }
+  catch (err: any) {
+    toast.add({ title: 'Error', description: err?.data?.message || 'Failed to trigger collection', color: 'error' })
   }
   finally {
     collecting.value = false

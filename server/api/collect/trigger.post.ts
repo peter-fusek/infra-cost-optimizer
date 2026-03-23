@@ -13,7 +13,38 @@ import { createUptimeRobotCollector } from '../../collectors/uptimerobot'
 import { checkBudgetAlerts } from '../../services/budget-alerts'
 import { checkPlanLimitAlerts } from '../../services/plan-limit-alerts'
 
+// Rate limiting: minimum 2 minutes between manual triggers
+let lastTriggerAt = 0
+const MIN_TRIGGER_INTERVAL_MS = 2 * 60 * 1000
+
+// Concurrent run guard
+let isRunning = false
+
 export default defineEventHandler(async (event) => {
+  // Prevent concurrent runs
+  if (isRunning) {
+    throw createError({ statusCode: 429, message: 'Collection already in progress' })
+  }
+
+  // Rate limit manual triggers
+  const now = Date.now()
+  const elapsed = now - lastTriggerAt
+  if (elapsed < MIN_TRIGGER_INTERVAL_MS) {
+    const waitSec = Math.ceil((MIN_TRIGGER_INTERVAL_MS - elapsed) / 1000)
+    throw createError({ statusCode: 429, message: `Please wait ${waitSec}s before triggering again` })
+  }
+
+  isRunning = true
+  lastTriggerAt = now
+
+  try {
+    return await runCollection(event)
+  } finally {
+    isRunning = false
+  }
+})
+
+async function runCollection(event: Parameters<Parameters<typeof defineEventHandler>[0]>[0]) {
   const body = await readBody(event) || {}
   const targetPlatform = body.platform as string | undefined
 
@@ -150,4 +181,4 @@ export default defineEventHandler(async (event) => {
   }
 
   return { collected: results, period: { start, end }, alerts: newAlerts, limitAlerts, errors: { alertsError, limitAlertsError } }
-})
+}

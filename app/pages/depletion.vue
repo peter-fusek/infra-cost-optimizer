@@ -30,8 +30,8 @@ async function triggerCollection() {
     await $fetch('/api/collect/trigger', { method: 'POST' })
     toast.add({ title: 'Collection started', description: 'Data will refresh shortly', color: 'success' })
     setTimeout(() => refresh(), 5000)
-  } catch {
-    toast.add({ title: 'Error', description: 'Failed to trigger collection', color: 'error' })
+  } catch (err: any) {
+    toast.add({ title: 'Error', description: err?.data?.message || 'Failed to trigger collection', color: 'error' })
   } finally {
     collecting.value = false
   }
