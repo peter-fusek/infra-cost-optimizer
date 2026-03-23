@@ -14,6 +14,7 @@
   "dependencies": {
     "@nuxt/ui": "^4.5.1",
     "drizzle-orm": "^0.45.1",
+    "html2canvas": "^1.4.1",
     "nuxt": "^4.4.2",
     "nuxt-auth-utils": "^0.5.29",
     "pg": "^8.20.0",

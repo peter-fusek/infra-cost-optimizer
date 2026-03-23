@@ -42,6 +42,7 @@ export default defineNuxtConfig({
         clientSecret: process.env.NUXT_OAUTH_GOOGLE_CLIENT_SECRET || '',
       },
     },
+    githubToken: process.env.GITHUB_TOKEN || '',
     databaseUrl: process.env.DATABASE_URL || '',
     anthropicAdminApiKey: process.env.ANTHROPIC_ADMIN_API_KEY || '',
     railwayApiToken: process.env.RAILWAY_API_TOKEN || '',

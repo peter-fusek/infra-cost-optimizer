@@ -101,5 +101,7 @@ watch(() => route.path, () => {
         </div>
       </div>
     </footer>
+
+    <BugReportButton />
   </div>
 </template>
