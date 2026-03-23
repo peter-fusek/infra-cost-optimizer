@@ -5,7 +5,6 @@ export interface BugContext {
   viewport: { width: number; height: number }
   timestamp: string
   consoleErrors: string[]
-  visibleText: string
 }
 
 export function buildBugIssueBody(
@@ -51,20 +50,6 @@ export function buildBugIssueBody(
       '## Screenshot',
       '',
       `![Bug screenshot](${screenshotUrl})`,
-    )
-  }
-
-  if (context.visibleText) {
-    lines.push(
-      '',
-      '<details>',
-      '<summary>Page Content (visible text at time of report)</summary>',
-      '',
-      '```',
-      context.visibleText,
-      '```',
-      '',
-      '</details>',
     )
   }
 

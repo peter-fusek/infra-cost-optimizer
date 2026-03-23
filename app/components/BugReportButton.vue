@@ -1,28 +1,55 @@
 <script setup lang="ts">
 import type { BugContext } from '~/composables/useBugReport'
 
-const { capture, clearCapturedErrors } = useBugReport()
+const { captureContext, clearCapturedErrors } = useBugReport()
 const toast = useToast()
 
 const open = ref(false)
-const capturing = ref(false)
 const submitting = ref(false)
 const description = ref('')
 const context = ref<BugContext | null>(null)
+const screenshotDataUrl = ref<string | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
-async function openModal() {
-  capturing.value = true
-  try {
-    context.value = await capture()
-  }
-  catch (err) {
-    console.error('Failed to capture bug context:', err)
-    toast.add({ title: 'Screenshot failed', description: 'You can still submit the report.', color: 'warning' })
-  }
-  finally {
-    capturing.value = false
-  }
+function openModal() {
+  context.value = captureContext()
   open.value = true
+}
+
+function handlePaste(e: ClipboardEvent) {
+  const items = e.clipboardData?.items
+  if (!items) return
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault()
+      const file = item.getAsFile()
+      if (file) readImageFile(file)
+      return
+    }
+  }
+}
+
+function handleFileSelect(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (file) readImageFile(file)
+  input.value = ''
+}
+
+function readImageFile(file: File) {
+  if (file.size > 5 * 1024 * 1024) {
+    toast.add({ title: 'Image too large', description: 'Max 5 MB', color: 'warning' })
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = () => {
+    screenshotDataUrl.value = reader.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeScreenshot() {
+  screenshotDataUrl.value = null
 }
 
 async function submit() {
@@ -44,10 +71,9 @@ async function submit() {
               viewport: context.value.viewport,
               timestamp: context.value.timestamp,
               consoleErrors: context.value.consoleErrors,
-              visibleText: context.value.visibleText,
-              screenshotDataUrl: context.value.screenshotDataUrl,
             }
           : null,
+        screenshotDataUrl: screenshotDataUrl.value,
       },
     })
     toast.add({
@@ -70,6 +96,7 @@ function close() {
   open.value = false
   description.value = ''
   context.value = null
+  screenshotDataUrl.value = null
   clearCapturedErrors()
 }
 </script>
@@ -88,20 +115,37 @@ function close() {
 
     <UModal v-model:open="open" title="Report a Bug" :ui="{ content: 'max-w-xl' }">
       <template #body>
-        <div class="space-y-4">
+        <div class="space-y-4" @paste="handlePaste">
+          <!-- Screenshot area -->
           <div class="rounded-lg border border-[var(--ui-border)] overflow-hidden bg-[var(--ui-bg-elevated)]">
-            <div v-if="capturing" class="flex items-center justify-center h-40">
-              <UIcon name="i-lucide-loader-2" class="size-6 animate-spin text-[var(--ui-text-muted)]" />
-              <span class="ml-2 text-sm text-[var(--ui-text-muted)]">Capturing screenshot...</span>
+            <div v-if="screenshotDataUrl" class="relative">
+              <img
+                :src="screenshotDataUrl"
+                alt="Bug screenshot"
+                class="w-full max-h-48 object-cover object-top"
+              >
+              <button
+                class="absolute top-2 right-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
+                aria-label="Remove screenshot"
+                @click="removeScreenshot"
+              >
+                <UIcon name="i-lucide-x" class="size-4" />
+              </button>
             </div>
-            <img
-              v-else-if="context?.screenshotDataUrl"
-              :src="context.screenshotDataUrl"
-              alt="Page screenshot"
-              class="w-full max-h-48 object-cover object-top"
+            <div
+              v-else
+              class="flex flex-col items-center justify-center h-32 text-sm text-[var(--ui-text-dimmed)] gap-2 cursor-pointer"
+              @click="fileInputRef?.click()"
             >
-            <div v-else class="flex items-center justify-center h-40 text-sm text-[var(--ui-text-dimmed)]">
-              No screenshot available
+              <UIcon name="i-lucide-clipboard-paste" class="size-6" />
+              <span>Paste screenshot (Ctrl+V) or click to upload</span>
+              <input
+                ref="fileInputRef"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleFileSelect"
+              >
             </div>
           </div>
 
@@ -136,7 +180,7 @@ function close() {
               icon="i-lucide-send"
               color="primary"
               :loading="submitting"
-              :disabled="!description.trim() || capturing"
+              :disabled="!description.trim()"
               @click="submit"
             />
           </div>

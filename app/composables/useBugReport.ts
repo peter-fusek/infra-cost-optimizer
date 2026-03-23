@@ -1,12 +1,10 @@
 export interface BugContext {
-  screenshotDataUrl: string
   url: string
   title: string
   userAgent: string
   viewport: { width: number; height: number }
   timestamp: string
   consoleErrors: string[]
-  visibleText: string
 }
 
 const consoleErrors: string[] = []
@@ -34,32 +32,16 @@ export function clearCapturedErrors() {
 export function useBugReport() {
   installConsoleInterceptor()
 
-  async function capture(): Promise<BugContext> {
-    const { default: html2canvas } = await import('html2canvas')
-    const canvas = await html2canvas(document.body, {
-      useCORS: true,
-      allowTaint: false,
-      scale: 0.5,
-      logging: false,
-    })
-
-    const mainEl = document.querySelector('main')
-    const visibleText = (mainEl?.innerText || document.body.innerText || '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 2000)
-
+  function captureContext(): BugContext {
     return {
-      screenshotDataUrl: canvas.toDataURL('image/jpeg', 0.7),
       url: window.location.href,
       title: document.title,
       userAgent: navigator.userAgent,
       viewport: { width: window.innerWidth, height: window.innerHeight },
       timestamp: new Date().toISOString(),
       consoleErrors: [...consoleErrors].slice(-10),
-      visibleText,
     }
   }
 
-  return { capture, clearCapturedErrors }
+  return { captureContext, clearCapturedErrors }
 }

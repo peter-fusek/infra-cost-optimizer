@@ -4,7 +4,8 @@ const REPO = 'peter-fusek/infra-cost-optimizer'
 
 interface BugReportBody {
   description: string
-  context: (BugContext & { screenshotDataUrl?: string }) | null
+  context: BugContext | null
+  screenshotDataUrl?: string | null
 }
 
 async function uploadScreenshot(base64Data: string, token: string): Promise<string | null> {
@@ -62,8 +63,8 @@ export default defineEventHandler(async (event) => {
   const ctx = body.context
 
   let screenshotUrl: string | null = null
-  if (ctx?.screenshotDataUrl) {
-    const match = ctx.screenshotDataUrl.match(/^data:image\/[^;]+;base64,(.+)$/)
+  if (body.screenshotDataUrl) {
+    const match = body.screenshotDataUrl.match(/^data:image\/[^;]+;base64,(.+)$/)
     if (match) {
       screenshotUrl = await uploadScreenshot(match[1], token)
     }
