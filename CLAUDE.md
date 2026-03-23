@@ -11,7 +11,7 @@
 - Nuxt 4 + @nuxt/ui v4 + Tailwind CSS v4 + Drizzle ORM + node-postgres
 - DB: Render PostgreSQL. Schema at server/db/schema.ts
 - Collectors: server/collectors/*.ts — each returns CollectorResult { records, errors, accountIdentifier? }
-- Collect task: server/tasks/collect.ts — daily cron at 06:00 UTC + manual trigger
+- Collect task: server/tasks/collect.ts — daily cron at 06:00 UTC + manual trigger via POST /api/collect/trigger (2min rate limit, concurrent run guard)
 - Auth: nuxt-auth-utils + Google OAuth. Middleware at server/middleware/auth.ts protects POST/PATCH/DELETE (except /api/bugs)
 - Bug reporter: app/components/BugReportButton.vue + app/composables/useBugReport.ts → server/api/bugs.post.ts (needs GITHUB_TOKEN env var)
   - Screenshot: user paste (Ctrl+V) or file upload only — NEVER auto-capture DOM content
@@ -25,6 +25,8 @@
 - Plan limits: server/utils/plan-limits.ts (PLAN_LIMITS, extractUsage, formatUsage, formatLimit)
 - EUR conversion: server/utils/currency.ts (EUR_USD_RATE, toEur) — update monthly
 - Bug issue markdown: server/utils/bug-report-markdown.ts (buildBugIssueBody, BugContext type)
+- Collection trigger: app/composables/useCollectionTrigger.ts — shared composable for all refresh buttons
+- Shared formatters: app/utils/time.ts (timeAgo), app/utils/icons.ts (typeIcons) — auto-imported by Nuxt
 - Fetch timeouts: AbortSignal.timeout(15_000) on all external calls, 30s for Railway GraphQL
 - Error handling: always surface errors in errors[] array, never empty catch blocks
 - Collection dedup: delete old records before inserting new per platform+period
@@ -42,3 +44,5 @@
 - defineCachedEventHandler for Nitro caching (used on /api/platforms/status, 5min TTL)
 - collectionRuns insert AFTER key check to avoid orphaned "running" records
 - Depletion balances stored in .data/credit-balances.json (not DB) — distinguish ENOENT from corruption
+- Resend collector: paginated email counting capped at 10 pages to prevent API overdrawing
+- Collection trigger: module-level rate limit (2min) and concurrent run guard — resets on deploy
