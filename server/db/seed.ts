@@ -1,4 +1,4 @@
-import { platforms, services, budgets, optimizations } from './schema'
+import { platforms, services, budgets, optimizations, projects } from './schema'
 
 // Platform seed data — full service inventory
 // Updated 2026-03-24: added Google services, removed unused OpenAI/Twilio
@@ -123,6 +123,23 @@ export const serviceSeed = [
 // Default global budget — updated 2026-03-24 to reflect actual ~$800/mo with Claude dual accounts
 export const budgetSeed = [
   { name: 'Total Infrastructure', platformId: null, monthlyLimit: '850.00' },
+]
+
+// Project registry — all personal projects with tech stack and URLs
+export const projectSeed = [
+  { slug: 'infracost', name: 'InfraCost', description: 'Infrastructure cost tracking dashboard', repoUrl: 'https://github.com/peter-fusek/infra-cost-optimizer', productionUrl: 'https://infracost.eu', techStack: ['nuxt', 'typescript', 'tailwind', 'drizzle', 'postgres', 'render'], status: 'active' as const },
+  { slug: 'homegrif.com', name: 'HomeGrif.com', description: 'Real estate partner platform (CZ + SK)', repoUrl: 'https://github.com/instarea-sk/homegrif_com', productionUrl: 'https://homegrif.com', techStack: ['nuxt', 'typescript', 'tailwind', 'postgres', 'render'], status: 'active' as const },
+  { slug: 'oncoteam', name: 'Oncoteam', description: 'Oncology treatment management dashboard', repoUrl: 'https://github.com/instarea-sk/homegrif', productionUrl: 'https://dashboard.oncoteam.cloud', techStack: ['nuxt', 'typescript', 'fastapi', 'python', 'postgres', 'railway'], status: 'active' as const },
+  { slug: 'oncofiles', name: 'Oncofiles', description: 'Medical document management with AI', repoUrl: 'https://github.com/peter-fusek/oncofiles', productionUrl: 'https://oncofiles.com', techStack: ['nuxt', 'typescript', 'turso', 'railway'], status: 'active' as const },
+  { slug: 'scrabsnap', name: 'ScrabSnap', description: 'Scrabble board scanner and scorer', repoUrl: null, productionUrl: null, techStack: ['nuxt', 'typescript', 'neon', 'render'], status: 'active' as const },
+  { slug: 'budgetco', name: 'BudgetCo', description: 'Family budget management with bank sync', repoUrl: null, productionUrl: 'https://budgetco.onrender.com', techStack: ['nuxt', 'fastapi', 'python', 'postgres', 'render', 'gcp'], status: 'active' as const },
+  { slug: 'contacts-refiner', name: 'Contacts Refiner', description: 'Google Contacts deduplication and enrichment', repoUrl: 'https://github.com/instarea-sk/google-contacts-refiner', productionUrl: 'https://contactrefiner.com', techStack: ['nuxt', 'typescript', 'gcp', 'render'], status: 'active' as const },
+  { slug: 'pulseshape', name: 'PulseShape', description: 'Health data visualization', repoUrl: 'https://github.com/instarea-sk/pulseshape', productionUrl: 'https://pulseshape.com', techStack: ['vue', 'python', 'gcp'], status: 'active' as const },
+  { slug: 'grandpa_check', name: 'Grandpa Check', description: 'Elderly wellness check-in system', repoUrl: 'https://github.com/instarea-sk/grandpa_check', productionUrl: null, techStack: ['python', 'github-actions'], status: 'active' as const },
+  { slug: 'replica.city', name: 'Replica City', description: '3D city replica visualization', repoUrl: 'https://github.com/instarea-sk/replica-city', productionUrl: null, techStack: ['javascript', 'three.js'], status: 'paused' as const },
+  { slug: 'robota', name: 'Robota', description: 'Automation workflows', repoUrl: 'https://github.com/instarea-sk/robota', productionUrl: null, techStack: ['python', 'github-actions'], status: 'paused' as const },
+  { slug: 'instarea', name: 'Instarea', description: 'Company website', repoUrl: 'https://github.com/instarea-sk/instareaweb', productionUrl: 'https://instarea.com', techStack: ['nuxt', 'render'], status: 'paused' as const },
+  { slug: 'personal', name: 'Personal (Claude)', description: 'Personal Claude Max account', repoUrl: null, productionUrl: null, techStack: ['claude'], status: 'active' as const },
 ]
 
 // Optimization opportunities — regenerated 2026-03-24 after infrastructure audit

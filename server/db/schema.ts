@@ -12,6 +12,26 @@ export const effortEnum = pgEnum('effort', ['trivial', 'small', 'medium', 'large
 export const actorTypeEnum = pgEnum('actor_type', ['system', 'user', 'ai'])
 export const collectionRunStatusEnum = pgEnum('collection_run_status', ['running', 'success', 'partial', 'failed'])
 
+// --- Projects ---
+
+export const projectStatusEnum = pgEnum('project_status', ['active', 'paused', 'archived'])
+
+export const projects = pgTable('projects', {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  slug: varchar({ length: 100 }).notNull().unique(),
+  name: varchar({ length: 255 }).notNull(),
+  description: text(),
+  repoUrl: varchar('repo_url', { length: 500 }),
+  productionUrl: varchar('production_url', { length: 500 }),
+  techStack: jsonb('tech_stack').$type<string[]>(), // ['nuxt', 'postgres', 'render', 'tailwind']
+  status: projectStatusEnum().notNull().default('active'),
+  monthlyBudget: numeric('monthly_budget', { precision: 10, scale: 2 }),
+  discoveredAt: timestamp('discovered_at').defaultNow().notNull(),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+})
+
 // --- Platforms ---
 
 export const platforms = pgTable('platforms', {
@@ -186,6 +206,8 @@ export const costRecordsRelations = relations(costRecords, ({ one }) => ({
   platform: one(platforms, { fields: [costRecords.platformId], references: [platforms.id] }),
   service: one(services, { fields: [costRecords.serviceId], references: [services.id] }),
 }))
+
+export const projectsRelations = relations(projects, () => ({}))
 
 export const budgetsRelations = relations(budgets, ({ one }) => ({
   platform: one(platforms, { fields: [budgets.platformId], references: [platforms.id] }),
