@@ -64,6 +64,10 @@ export default defineEventHandler(async (event) => {
 
   let screenshotUrl: string | null = null
   if (body.screenshotDataUrl) {
+    // Server-side size limit: ~5MB base64 ≈ 7MB string (prevents memory/API abuse)
+    if (body.screenshotDataUrl.length > 7_000_000) {
+      throw createError({ statusCode: 413, message: 'Screenshot too large (max ~5 MB)' })
+    }
     const match = body.screenshotDataUrl.match(/^data:image\/[^;]+;base64,(.+)$/)
     if (match) {
       screenshotUrl = await uploadScreenshot(match[1], token)

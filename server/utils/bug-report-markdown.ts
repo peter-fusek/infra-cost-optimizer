@@ -39,7 +39,7 @@ export function buildBugIssueBody(
       '## Console Errors',
       '',
       '```',
-      ...context.consoleErrors,
+      ...context.consoleErrors.map(e => e.replace(/`/g, "'")),
       '```',
     )
   }

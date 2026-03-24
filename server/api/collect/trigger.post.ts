@@ -114,7 +114,7 @@ async function runCollection(event: Parameters<Parameters<typeof defineEventHand
     // Insert run record only after confirming we have a collector
     const [run] = await db.insert(collectionRuns).values({
       platformId: platform.id,
-      triggerType: body.trigger || 'manual',
+      triggerType: ['manual', 'cron', 'api'].includes(body.trigger) ? body.trigger : 'manual',
     }).returning()
 
     try {

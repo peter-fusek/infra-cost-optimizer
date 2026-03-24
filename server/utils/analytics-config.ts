@@ -21,8 +21,8 @@ export const ANALYTICS_CONFIG: ProjectAnalyticsConfig[] = [
   { slug: 'infracost', ga4PropertyId: '529880367', gscSiteUrl: 'https://infracost.eu' },
   { slug: 'homegrif.com', ga4PropertyId: '516113889', gscSiteUrl: 'https://homegrif.com' },
   { slug: 'oncoteam', ga4PropertyId: '529091873', gscSiteUrl: 'https://dashboard.oncoteam.cloud' },
-  { slug: 'oncofiles', ga4PropertyId: null, gscSiteUrl: 'https://oncofiles.com' },
-  { slug: 'contacts-refiner', ga4PropertyId: null, gscSiteUrl: 'https://contactrefiner.com' },
+  { slug: 'oncofiles', ga4PropertyId: '529720507', gscSiteUrl: 'https://oncofiles.com' },
+  { slug: 'contacts-refiner', ga4PropertyId: '529886218', gscSiteUrl: 'https://contactrefiner.com' },
   { slug: 'budgetco', ga4PropertyId: null, gscSiteUrl: null }, // BudgetCo GA4 account 388351377 — property ID TBD
   { slug: 'pulseshape', ga4PropertyId: '494047490', gscSiteUrl: 'https://pulseshape.com' },
   { slug: 'instarea', ga4PropertyId: null, gscSiteUrl: 'https://instarea.com' },
