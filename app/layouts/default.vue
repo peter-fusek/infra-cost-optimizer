@@ -9,6 +9,7 @@ const navigation = [
   { label: 'Trends', icon: 'i-lucide-trending-up', to: '/trends' },
   { label: 'Optimizations', icon: 'i-lucide-lightbulb', to: '/optimizations' },
   { label: 'Countdown', icon: 'i-lucide-timer', to: '/countdown' },
+  { label: 'Analytics', icon: 'i-lucide-bar-chart-2', to: '/analytics' },
   { label: 'Status', icon: 'i-lucide-activity', to: '/status' },
   { label: 'Platforms', icon: 'i-lucide-server', to: '/platforms' },
   { label: 'Budgets', icon: 'i-lucide-wallet', to: '/budgets' },

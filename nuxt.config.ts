@@ -52,6 +52,7 @@ export default defineNuxtConfig({
       },
     },
     githubToken: process.env.GITHUB_TOKEN || '',
+    gcpServiceAccountJson: process.env.GCP_SERVICE_ACCOUNT_JSON || '',
     databaseUrl: process.env.DATABASE_URL || '',
     anthropicAdminApiKey: process.env.ANTHROPIC_ADMIN_API_KEY || '',
     railwayApiToken: process.env.RAILWAY_API_TOKEN || '',

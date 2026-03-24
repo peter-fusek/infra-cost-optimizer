@@ -25,7 +25,13 @@
   - GET /api/projects/[slug]/changes returns change history timeline from audit_log
 - Free Tier Expiry: server/utils/free-tier-expiry.ts — tracks known expiration dates for free services
   - GET /api/expiry returns expiry statuses with risk levels
-- Pages: 9 total (/, /breakdown, /trends, /optimizations, /countdown, /status, /platforms, /budgets, /manual)
+- Analytics: server/services/analytics-ga4.ts + analytics-gsc.ts — GA4 traffic + GSC search performance per project
+  - Config: server/utils/analytics-config.ts maps project slugs to GA4 Property IDs + GSC Site URLs
+  - Auth: server/utils/google-auth.ts — GCP service account (GCP_SERVICE_ACCOUNT_JSON env var)
+  - API: GET /api/analytics/traffic, /api/analytics/search, /api/analytics/summary
+  - SEO scoring: 0-100 based on CTR, position, impressions, click volume, trend direction
+  - LLMEO tips: structured data, content recommendations for AI crawler visibility
+- Pages: 10 total (/, /breakdown, /trends, /optimizations, /countdown, /analytics, /status, /platforms, /budgets, /manual)
   - /countdown = merged Depletion + Limits + Free Tier Expiry — urgency-sorted
   - /status = UptimeRobot monitors + Projects grid (expandable with change timeline) + Drift alerts + GitHub Discovery (auth-gated)
   - Project cards: clickable expand with change history, yellow ring for "recently changed" (7 days)
