@@ -62,12 +62,10 @@ export const serviceSeed = [
   { platformSlug: 'anthropic', name: 'API Usage', project: null, serviceType: 'api_usage', monthlyCostEstimate: '65.00' },
 
   // Claude Max — two accounts (scraped 2026-03-24)
-  // Personal: peterfusek1980@gmail.com — Max plan €180/mo
   { platformSlug: 'claude-max', name: 'Max Subscription (personal)', project: 'personal', serviceType: 'subscription', monthlyCostEstimate: '196.00' },
-  { platformSlug: 'claude-max', name: 'Extra Usage (personal)', project: 'personal', serviceType: 'usage', monthlyCostEstimate: '29.00' }, // €26.43 spent Mar, €30 cap
-  // Instarea: peter.fusek@instarea.sk — Team plan 5 seats
-  { platformSlug: 'claude-max', name: 'Team Subscription (instarea)', project: 'instarea', serviceType: 'subscription', monthlyCostEstimate: '297.00' }, // €273.58/mo ≈ $297
-  { platformSlug: 'claude-max', name: 'Extra Usage (instarea)', project: 'instarea', serviceType: 'usage', monthlyCostEstimate: '116.00' }, // €106.43 spent Mar, €300 cap
+  { platformSlug: 'claude-max', name: 'Extra Usage (personal)', project: 'personal', serviceType: 'usage', monthlyCostEstimate: '29.00' },
+  { platformSlug: 'claude-max', name: 'Team Subscription (instarea)', project: 'instarea', serviceType: 'subscription', monthlyCostEstimate: '297.00' },
+  { platformSlug: 'claude-max', name: 'Extra Usage (instarea)', project: 'instarea', serviceType: 'usage', monthlyCostEstimate: '116.00' },
 
   // Neon (free tier)
   { platformSlug: 'neon', name: 'homegrif-neon', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '0.00' },
@@ -78,7 +76,7 @@ export const serviceSeed = [
   { platformSlug: 'gcp', name: 'PulseShape Backups', project: 'pulseshape', serviceType: 'storage', monthlyCostEstimate: '7.15' }, // €6.56 forecasted EOM
 
   // Resend
-  { platformSlug: 'resend', name: 'Email Sending', project: 'homegrif.com', serviceType: 'api_usage', monthlyCostEstimate: '0.00' },
+  { platformSlug: 'resend', name: 'Transactional Pro', project: 'homegrif.com', serviceType: 'subscription', monthlyCostEstimate: '20.00' }, // $20/mo, Visa 5717
 
   // Turso
   { platformSlug: 'turso', name: 'erika-files-mcp', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' }, // 16.8M rows read, 26.87 MB storage
@@ -108,7 +106,7 @@ export const serviceSeed = [
   { platformSlug: 'websupport', name: 'instarea.sk', project: 'instarea', serviceType: 'domain', monthlyCostEstimate: '0.58' },
 
   // Google Services (free tier — $0, tracked for complete infra picture)
-  { platformSlug: 'google-services', name: 'GA4 (G-QVK3BVWXWV)', project: 'infracost', serviceType: 'analytics', monthlyCostEstimate: '0.00' },
+  { platformSlug: 'google-services', name: 'Google Analytics 4', project: 'infracost', serviceType: 'analytics', monthlyCostEstimate: '0.00' },
   { platformSlug: 'google-services', name: 'Google Tag Manager', project: 'infracost', serviceType: 'analytics', monthlyCostEstimate: '0.00' },
   { platformSlug: 'google-services', name: 'Google Search Console', project: 'infracost', serviceType: 'analytics', monthlyCostEstimate: '0.00' },
   { platformSlug: 'google-services', name: 'Google OAuth (GCP)', project: null, serviceType: 'auth', monthlyCostEstimate: '0.00' },

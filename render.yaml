@@ -11,11 +11,39 @@ services:
         fromDatabase:
           name: infracost-db
           property: connectionString
+      - key: NUXT_SESSION_PASSWORD
+        sync: false
+      - key: NUXT_OAUTH_GOOGLE_CLIENT_ID
+        sync: false
+      - key: NUXT_OAUTH_GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: ALLOWED_EMAILS
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
       - key: ANTHROPIC_ADMIN_API_KEY
         sync: false
       - key: RAILWAY_API_TOKEN
         sync: false
       - key: RENDER_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NEON_API_KEY
+        sync: false
+      - key: TURSO_API_TOKEN
+        sync: false
+      - key: UPTIMEROBOT_API_KEY
+        sync: false
+      - key: ALERT_FROM_EMAIL
+        sync: false
+      - key: ALERT_TO_EMAIL
+        sync: false
+      - key: WHATSAPP_PHONE
+        sync: false
+      - key: WHATSAPP_APIKEY
+        sync: false
+      - key: NUXT_PUBLIC_GA_ID
         sync: false
 
 databases:

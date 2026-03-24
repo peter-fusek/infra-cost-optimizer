@@ -12,9 +12,17 @@ describe('sendAlertEmail', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
+  it('skips when alertFromEmail or alertToEmail is missing', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    await sendAlertEmail('test', 'warning', 'Test', { resendApiKey: 'key' })
+    expect(fetchSpy).not.toHaveBeenCalled()
+    await sendAlertEmail('test', 'warning', 'Test', { resendApiKey: 'key', alertFromEmail: 'a@b.com' })
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('sends email with correct payload', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }))
-    await sendAlertEmail('Budget exceeded', 'critical', 'Budget Alert', { resendApiKey: 'test-key' })
+    await sendAlertEmail('Budget exceeded', 'critical', 'Budget Alert', { resendApiKey: 'test-key', alertFromEmail: 'InfraCost <alerts@test.example.com>', alertToEmail: 'admin@test.example.com' })
 
     expect(fetchSpy).toHaveBeenCalledOnce()
     const [url, options] = fetchSpy.mock.calls[0]
@@ -25,8 +33,8 @@ describe('sendAlertEmail', () => {
       'Authorization': 'Bearer test-key',
     })
     const body = JSON.parse(options?.body as string)
-    expect(body.from).toBe('InfraCost <alerts@contactrefiner.com>')
-    expect(body.to).toEqual(['peterfusek1980@gmail.com'])
+    expect(body.from).toBe('InfraCost <alerts@test.example.com>')
+    expect(body.to).toEqual(['admin@test.example.com'])
     expect(body.subject).toBe('[InfraCost CRITICAL] Budget Alert')
     expect(body.text).toBe('Budget exceeded')
   })
@@ -34,14 +42,14 @@ describe('sendAlertEmail', () => {
   it('handles fetch errors gracefully', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network error'))
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    await sendAlertEmail('test', 'warning', 'Test', { resendApiKey: 'key' })
+    await sendAlertEmail('test', 'warning', 'Test', { resendApiKey: 'key', alertFromEmail: 'a@b.com', alertToEmail: 'c@d.com' })
     expect(consoleSpy).toHaveBeenCalledWith('[notifications] Email send failed:', 'network error')
   })
 
   it('logs non-ok responses', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('rate limited', { status: 429 }))
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    await sendAlertEmail('test', 'warning', 'Test', { resendApiKey: 'key' })
+    await sendAlertEmail('test', 'warning', 'Test', { resendApiKey: 'key', alertFromEmail: 'a@b.com', alertToEmail: 'c@d.com' })
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('429'))
   })
 })

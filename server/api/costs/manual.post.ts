@@ -51,8 +51,8 @@ export default defineEventHandler(async (event) => {
     currency: body.currency || 'USD',
     costType: body.costType || 'usage',
     collectionMethod: 'manual',
-    notes: body.notes,
-    rawData: body.rawData,
+    notes: typeof body.notes === 'string' ? body.notes.slice(0, 2000) : undefined,
+    rawData: body.rawData && JSON.stringify(body.rawData).length < 10_000 ? body.rawData : undefined,
   }).returning()
 
   return record

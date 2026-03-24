@@ -4,7 +4,7 @@
  */
 
 export async function sendAlertEmail(message: string, severity: string, subject: string, config: Record<string, string>) {
-  if (!config.resendApiKey) return
+  if (!config.resendApiKey || !config.alertFromEmail || !config.alertToEmail) return
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -13,8 +13,8 @@ export async function sendAlertEmail(message: string, severity: string, subject:
         'Authorization': `Bearer ${config.resendApiKey}`,
       },
       body: JSON.stringify({
-        from: config.alertFromEmail || 'InfraCost <alerts@contactrefiner.com>',
-        to: [config.alertToEmail || 'peterfusek1980@gmail.com'],
+        from: config.alertFromEmail,
+        to: [config.alertToEmail],
         subject: `[InfraCost ${severity.toUpperCase()}] ${subject}`,
         text: message,
       }),

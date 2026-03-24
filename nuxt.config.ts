@@ -16,15 +16,24 @@ export default defineNuxtConfig({
       link: [
         { rel: 'canonical', href: 'https://infracost.eu' },
       ],
-      script: [
-        { src: 'https://www.googletagmanager.com/gtag/js?id=G-QVK3BVWXWV', async: true },
-        { innerHTML: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-QVK3BVWXWV')" },
-      ],
+      script: process.env.NUXT_PUBLIC_GA_ID ? [
+        { src: `https://www.googletagmanager.com/gtag/js?id=${process.env.NUXT_PUBLIC_GA_ID}`, async: true },
+        { innerHTML: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${process.env.NUXT_PUBLIC_GA_ID}')` },
+      ] : [],
     },
   },
   nitro: {
     experimental: {
       tasks: true,
+    },
+    routeRules: {
+      '/**': {
+        headers: {
+          'X-Frame-Options': 'DENY',
+          'X-Content-Type-Options': 'nosniff',
+          'Referrer-Policy': 'strict-origin-when-cross-origin',
+        },
+      },
     },
     scheduledTasks: {
       // Run cost collection daily at 06:00 UTC
@@ -53,8 +62,8 @@ export default defineNuxtConfig({
     uptimeRobotApiKey: process.env.UPTIMEROBOT_API_KEY || '',
     whatsappPhone: process.env.WHATSAPP_PHONE || '',
     whatsappApikey: process.env.WHATSAPP_APIKEY || '',
-    alertFromEmail: process.env.ALERT_FROM_EMAIL || 'InfraCost <alerts@contactrefiner.com>',
-    alertToEmail: process.env.ALERT_TO_EMAIL || 'peterfusek1980@gmail.com',
+    alertFromEmail: process.env.ALERT_FROM_EMAIL || '',
+    alertToEmail: process.env.ALERT_TO_EMAIL || '',
     public: {
       eurUsdRate: 0.92, // EUR per 1 USD — update monthly
     },
