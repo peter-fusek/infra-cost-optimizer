@@ -62,11 +62,9 @@ export const serviceSeed = [
   // Anthropic API — includes autonomous agent (~$2/day = ~$60/mo) + manual usage (~$65/mo)
   { platformSlug: 'anthropic', name: 'API Usage', project: null, serviceType: 'api_usage', monthlyCostEstimate: '65.00' },
 
-  // Claude Max — two accounts (scraped 2026-03-24)
+  // Claude Max — one personal account (corrected 2026-03-24, was incorrectly showing two accounts)
   { platformSlug: 'claude-max', name: 'Max Subscription (personal)', project: 'personal', serviceType: 'subscription', monthlyCostEstimate: '196.00' },
   { platformSlug: 'claude-max', name: 'Extra Usage (personal)', project: 'personal', serviceType: 'usage', monthlyCostEstimate: '29.00' },
-  { platformSlug: 'claude-max', name: 'Team Subscription (instarea)', project: 'instarea', serviceType: 'subscription', monthlyCostEstimate: '297.00' },
-  { platformSlug: 'claude-max', name: 'Extra Usage (instarea)', project: 'instarea', serviceType: 'usage', monthlyCostEstimate: '116.00' },
 
   // Neon (free tier)
   { platformSlug: 'neon', name: 'homegrif-neon', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '0.00' },
@@ -146,47 +144,23 @@ export const projectSeed = [
 // Reflects: merged projects, dual Claude Max accounts, corrected GCP costs, consolidated test envs
 export const optimizationSeed = [
   {
-    title: 'Review Claude Max dual-account spend (~$638/mo combined)',
-    description: `**Current:** Two Claude Max accounts totaling ~$638/mo:
-- Personal (gmail): Max $196/mo + ~$29 extra usage = ~$225/mo
-- Instarea: Team 5 seats $297/mo + ~$116 extra usage = ~$413/mo
+    title: 'Monitor Claude Max extra usage (~$29/mo)',
+    description: `**Current:** One Claude Max personal account:
+- Max $196/mo + ~$29 extra usage = ~$225/mo
 
-**PROS of consolidating:**
-- Could save $196/mo by dropping personal Max → use instarea Team seat instead
-- Instarea Team already has capacity (2 available seats)
-- Extra usage caps could be managed centrally
-
-**CONS:**
-- Personal account needed for non-instarea work (oncoteam, personal projects)
-- Mixing personal/business billing complicates accounting
-- May need separate accounts for compliance
-
-**ACTION:** Evaluate if personal Max can downgrade to Pro ($18/mo) — saves $178/mo. Use instarea Team seat for heavy AI work.`,
+**ACTION:** Monitor extra usage spending. If consistently under $10/mo, consider lowering the cap.`,
     platformSlug: 'claude-max',
-    estimatedSavings: '178.00',
+    estimatedSavings: '15.00',
     effort: 'trivial' as const,
     suggestedBy: 'ai' as const,
   },
   {
-    title: 'Reduce Claude extra usage spending (~$145/mo combined)',
-    description: `**Current:** Combined extra usage across both accounts:
-- Personal: €26.43/€30 cap (88% used in March)
-- Instarea: €106.43/€300 cap (35% used in March)
-- Total: ~$145/mo on top of subscriptions
+    title: 'Reduce Claude extra usage spending (~$29/mo)',
+    description: `**Current:** Extra usage on personal account ~$29/mo (€26.43/€30 cap).
 
-**PROS:**
-- Lowering spend caps saves money when usage is within plan limits
-- Most heavy usage may not need extra credits if workflows are optimized
-- Could save $50-100/mo by reducing caps and optimizing usage
-
-**CONS:**
-- May hit rate limits during intensive development sprints
-- Extra usage enables Claude Code heavy sessions without interruption
-- Productivity loss may exceed cost savings
-
-**ACTION:** Monitor actual extra usage patterns for 2 months. If consistently under cap, reduce spending limits.`,
+**ACTION:** Monitor for 2 months. If consistently under cap, reduce spending limit.`,
     platformSlug: 'claude-max',
-    estimatedSavings: '75.00',
+    estimatedSavings: '15.00',
     effort: 'trivial' as const,
     suggestedBy: 'ai' as const,
   },
