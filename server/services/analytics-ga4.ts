@@ -11,16 +11,6 @@ import { getAccessToken } from '../utils/google-auth'
 
 const GA4_API = 'https://analyticsdata.googleapis.com/v1beta'
 
-// Known LLM/AI bot user agent patterns
-const LLM_BOT_PATTERNS = [
-  'gptbot', 'chatgpt', 'oai-searchbot',
-  'claudebot', 'claude-web', 'anthropic',
-  'bingbot', 'googlebot',
-  'ccbot', 'perplexitybot', 'cohere-ai',
-  'bytespider', 'applebot',
-  'ia_archiver', 'petalbot',
-]
-
 export interface DailyTraffic {
   date: string // YYYY-MM-DD
   sessions: number

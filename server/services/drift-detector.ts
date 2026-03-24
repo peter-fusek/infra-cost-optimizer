@@ -16,6 +16,12 @@ export interface DriftItem {
   detail: string
 }
 
+const DRIFT_TYPE_LABELS: Record<DriftItem['type'], string> = {
+  new: 'New',
+  removed: 'Removed',
+  changed: 'Changed',
+}
+
 type DB = ReturnType<typeof import('../utils/db').useDB>
 
 export async function detectDrift(db: DB, config: Record<string, string>): Promise<DriftItem[]> {
@@ -213,11 +219,9 @@ export async function persistDriftAlerts(db: DB, drifts: DriftItem[], config: Re
 
     if (recentTypes.has(alertType)) continue
 
-    const severity = drift.type === 'removed' ? 'warning' as const
-      : drift.type === 'new' ? 'info' as const
-      : 'info' as const
+    const severity = drift.type === 'removed' ? 'warning' as const : 'info' as const
 
-    const message = `[${drift.platform}] ${drift.type === 'new' ? 'New' : drift.type === 'removed' ? 'Removed' : 'Changed'}: ${drift.name} — ${drift.detail}`
+    const message = `[${drift.platform}] ${DRIFT_TYPE_LABELS[drift.type]}: ${drift.name} — ${drift.detail}`
 
     // Resolve project slug — GitHub drifts use project slug directly, others via service name
     const projectSlug = drift.platform === 'GitHub'

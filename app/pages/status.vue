@@ -53,7 +53,6 @@ interface DiscoveredRepo {
   description: string | null
   owner: string
   isPrivate: boolean
-  isArchived: boolean
   primaryLanguage: string | null
   techStack: string[]
   deploymentIndicators: string[]

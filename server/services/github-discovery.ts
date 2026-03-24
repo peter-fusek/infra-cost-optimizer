@@ -9,6 +9,14 @@ const GITHUB_ACCOUNTS = [
   { owner: 'instarea-sk', type: 'org' as const },
 ]
 
+function githubHeaders(token: string): Record<string, string> {
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  }
+}
+
 // Repos to skip — external/client projects not managed by us
 const IGNORED_REPOS = new Set([
   'autoniq', 'osa', 'marketlocator', 'smartbill', 'servicehub',
@@ -70,7 +78,6 @@ export interface DiscoveredRepo {
   owner: string
   isPrivate: boolean
   isArchived: boolean
-  isFork: boolean
   primaryLanguage: string | null
   techStack: string[]
   deploymentIndicators: string[]
@@ -101,11 +108,7 @@ async function fetchGitHubRepos(owner: string, type: 'user' | 'org', token: stri
 
     const url = `${endpoint}?per_page=${perPage}&page=${page}&sort=pushed&direction=desc`
     const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
+      headers: githubHeaders(token),
       signal: AbortSignal.timeout(15_000),
     })
 
@@ -124,8 +127,6 @@ async function fetchGitHubRepos(owner: string, type: 'user' | 'org', token: stri
 }
 
 async function checkDeploymentIndicators(fullName: string, defaultBranch: string, token: string): Promise<string[]> {
-  const found: string[] = []
-
   // Check root tree for deployment files in a single API call
   const url = `https://api.github.com/repos/${fullName}/git/trees/${defaultBranch}`
   const response = await fetch(url, {
@@ -137,24 +138,15 @@ async function checkDeploymentIndicators(fullName: string, defaultBranch: string
     signal: AbortSignal.timeout(15_000),
   })
 
-  if (!response.ok) return found
+  if (!response.ok) return []
 
   const tree = await response.json() as { tree: Array<{ path: string; type: string }> }
   const rootFiles = new Set(tree.tree.filter(t => t.type === 'blob').map(t => t.path))
 
-  for (const indicator of DEPLOYMENT_INDICATORS) {
-    if (rootFiles.has(indicator)) {
-      found.push(indicator)
-    }
-  }
-
-  return found
+  return DEPLOYMENT_INDICATORS.filter(indicator => rootFiles.has(indicator))
 }
 
 async function detectTechStack(fullName: string, token: string): Promise<string[]> {
-  const stack: string[] = []
-
-  // Get language breakdown
   const url = `https://api.github.com/repos/${fullName}/languages`
   const response = await fetch(url, {
     headers: {
@@ -165,19 +157,14 @@ async function detectTechStack(fullName: string, token: string): Promise<string[
     signal: AbortSignal.timeout(15_000),
   })
 
-  if (response.ok) {
-    const languages = await response.json() as Record<string, number>
-    const total = Object.values(languages).reduce((a, b) => a + b, 0)
+  if (!response.ok) return []
 
-    // Include languages that make up >5% of codebase
-    for (const [lang, bytes] of Object.entries(languages)) {
-      if (bytes / total > 0.05 && LANGUAGE_MAP[lang]) {
-        stack.push(LANGUAGE_MAP[lang])
-      }
-    }
-  }
+  const languages = await response.json() as Record<string, number>
+  const total = Object.values(languages).reduce((a, b) => a + b, 0)
 
-  return stack
+  return Object.entries(languages)
+    .filter(([lang, bytes]) => bytes / total > 0.05 && LANGUAGE_MAP[lang])
+    .map(([lang]) => LANGUAGE_MAP[lang])
 }
 
 function normalizeRepoUrl(url: string): string {
@@ -227,7 +214,6 @@ export async function discoverGitHubRepos(token: string, registeredRepoUrls: str
           owner: account.owner,
           isPrivate: repo.private,
           isArchived: repo.archived,
-          isFork: repo.fork,
           primaryLanguage: repo.language,
           techStack,
           deploymentIndicators,
