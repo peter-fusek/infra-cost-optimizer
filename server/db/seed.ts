@@ -18,37 +18,37 @@ export const platformSeed = [
 ] as const
 
 // Service seed data — known services from our infrastructure
-// Verified against live Render billing 2026-03-14
+// Updated 2026-03-24: merged partners+homegrif→homegrif.com, split Claude Max accounts, fixed GCP, added Websupport domains
 export const serviceSeed = [
   // Render — Professional plan
   { platformSlug: 'render', name: 'Professional Plan', project: null, serviceType: 'subscription', monthlyCostEstimate: '19.00' },
 
-  // Render — Web services (actual names from billing)
-  { platformSlug: 'render', name: 'homegrif_com', project: 'homegrif', serviceType: 'web', monthlyCostEstimate: '7.13' },
-  { platformSlug: 'render', name: 'homegrif_com-test', project: 'homegrif', serviceType: 'web', monthlyCostEstimate: '7.13' },
-  { platformSlug: 'render', name: 'oncoteam-dashboard', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway 2026-03-15
-  { platformSlug: 'render', name: 'oncoteam-dashboard-test', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED
-  { platformSlug: 'render', name: 'partners-cz-prod', project: 'partners', serviceType: 'web', monthlyCostEstimate: '13.18' },
-  { platformSlug: 'render', name: 'partners-cz-test', project: 'partners', serviceType: 'web', monthlyCostEstimate: '7.13' },
+  // Render — Web services (partners + homegrif merged into homegrif.com — 2026-03-24)
+  { platformSlug: 'render', name: 'homegrif_com', project: 'homegrif.com', serviceType: 'web', monthlyCostEstimate: '7.13' },
+  { platformSlug: 'render', name: 'homegrif_com-test', project: 'homegrif.com', serviceType: 'web', monthlyCostEstimate: '7.13' },
+  { platformSlug: 'render', name: 'partners-cz-prod', project: 'homegrif.com', serviceType: 'web', monthlyCostEstimate: '13.18' },
+  { platformSlug: 'render', name: 'partners-cz-test', project: 'homegrif.com', serviceType: 'web', monthlyCostEstimate: '7.13' },
   { platformSlug: 'render', name: 'scrabsnap', project: 'scrabsnap', serviceType: 'web', monthlyCostEstimate: '2.57' },
   { platformSlug: 'render', name: 'budgetco', project: 'budgetco', serviceType: 'web', monthlyCostEstimate: '2.14' },
   { platformSlug: 'render', name: 'contacts-refiner-dashboard', project: 'contacts-refiner', serviceType: 'web', monthlyCostEstimate: '2.23' },
   { platformSlug: 'render', name: 'instareaweb', project: 'instarea', serviceType: 'web', monthlyCostEstimate: '0.00' },
+  { platformSlug: 'render', name: 'oncoteam-dashboard', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway
+  { platformSlug: 'render', name: 'oncoteam-dashboard-test', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED
   { platformSlug: 'render', name: 'oncoteam-landing', project: 'oncoteam', serviceType: 'web', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway
 
-  // Render — Databases (disk sizes from billing)
-  { platformSlug: 'render', name: 'homegrif-db', project: 'homegrif', serviceType: 'database', monthlyCostEstimate: '6.42' },
-  { platformSlug: 'render', name: 'homegrif-db-test', project: 'homegrif', serviceType: 'database', monthlyCostEstimate: '10.70' },
-  { platformSlug: 'render', name: 'oncoteam-db-prod', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway
-  { platformSlug: 'render', name: 'oncoteam-db-test', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' }, // SUSPENDED
-  { platformSlug: 'render', name: 'partners-db-prod', project: 'partners', serviceType: 'database', monthlyCostEstimate: '10.70' },
-  { platformSlug: 'render', name: 'partners-db-test', project: 'partners', serviceType: 'database', monthlyCostEstimate: '10.70' },
+  // Render — Databases (partners + homegrif merged into homegrif.com)
+  { platformSlug: 'render', name: 'homegrif-db', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '6.42' },
+  { platformSlug: 'render', name: 'homegrif-db-test', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '10.70' },
+  { platformSlug: 'render', name: 'partners-db-prod', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '10.70' },
+  { platformSlug: 'render', name: 'partners-db-test', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '10.70' },
   { platformSlug: 'render', name: 'scrabsnap-db', project: 'scrabsnap', serviceType: 'database', monthlyCostEstimate: '10.70' },
   { platformSlug: 'render', name: 'budgetco-db', project: 'budgetco', serviceType: 'database', monthlyCostEstimate: '0.00' },
   { platformSlug: 'render', name: 'infracost-db', project: 'infracost', serviceType: 'database', monthlyCostEstimate: '6.42' },
+  { platformSlug: 'render', name: 'oncoteam-db-prod', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' }, // SUSPENDED — migrated to Railway
+  { platformSlug: 'render', name: 'oncoteam-db-test', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' }, // SUSPENDED
 
   // Render — Cron + Pipeline
-  { platformSlug: 'render', name: 'homegrif-daily-report', project: 'homegrif', serviceType: 'cron', monthlyCostEstimate: '0.65' },
+  { platformSlug: 'render', name: 'homegrif-daily-report', project: 'homegrif.com', serviceType: 'cron', monthlyCostEstimate: '0.65' },
   { platformSlug: 'render', name: 'Pipeline Minutes', project: null, serviceType: 'ci_cd', monthlyCostEstimate: '0.00' },
 
   // Railway — 2 projects, 5 services (updated 2026-03-16 after oncoteam migration)
@@ -59,32 +59,58 @@ export const serviceSeed = [
   { platformSlug: 'railway', name: 'oncoteam-postgres', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '2.00' },
 
   // Anthropic API — includes autonomous agent (~$2/day = ~$60/mo) + manual usage (~$65/mo)
-  { platformSlug: 'anthropic', name: 'API Usage', project: null, serviceType: 'api_usage', monthlyCostEstimate: '125.00' },
+  { platformSlug: 'anthropic', name: 'API Usage', project: null, serviceType: 'api_usage', monthlyCostEstimate: '65.00' },
 
-  // Claude Max subscription
-  { platformSlug: 'claude-max', name: 'Max Subscription', project: null, serviceType: 'subscription', monthlyCostEstimate: '196.00' },
-  { platformSlug: 'claude-max', name: 'Extra Usage Credits', project: null, serviceType: 'usage', monthlyCostEstimate: '54.00' },
+  // Claude Max — two accounts (scraped 2026-03-24)
+  // Personal: peterfusek1980@gmail.com — Max plan €180/mo
+  { platformSlug: 'claude-max', name: 'Max Subscription (personal)', project: 'personal', serviceType: 'subscription', monthlyCostEstimate: '196.00' },
+  { platformSlug: 'claude-max', name: 'Extra Usage (personal)', project: 'personal', serviceType: 'usage', monthlyCostEstimate: '29.00' }, // €26.43 spent Mar, €30 cap
+  // Instarea: peter.fusek@instarea.sk — Team plan 5 seats
+  { platformSlug: 'claude-max', name: 'Team Subscription (instarea)', project: 'instarea', serviceType: 'subscription', monthlyCostEstimate: '297.00' }, // €273.58/mo ≈ $297
+  { platformSlug: 'claude-max', name: 'Extra Usage (instarea)', project: 'instarea', serviceType: 'usage', monthlyCostEstimate: '116.00' }, // €106.43 spent Mar, €300 cap
 
   // Neon (free tier)
-  { platformSlug: 'neon', name: 'homegrif-neon', project: 'homegrif', serviceType: 'database', monthlyCostEstimate: '0.00' },
+  { platformSlug: 'neon', name: 'homegrif-neon', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '0.00' },
   { platformSlug: 'neon', name: 'scrabsnap-neon', project: 'scrabsnap', serviceType: 'database', monthlyCostEstimate: '0.00' },
 
-  // GCP
-  { platformSlug: 'gcp', name: 'contacts-refiner', project: 'contacts-refiner', serviceType: 'cloud_run', monthlyCostEstimate: null },
+  // GCP — actual billing: €4.66 MTD Mar 2026, Autoniq PulseShape Backups (scraped 2026-03-24)
+  { platformSlug: 'gcp', name: 'contacts-refiner', project: 'contacts-refiner', serviceType: 'cloud_run', monthlyCostEstimate: '0.00' },
+  { platformSlug: 'gcp', name: 'PulseShape Backups', project: 'pulseshape', serviceType: 'storage', monthlyCostEstimate: '7.15' }, // €6.56 forecasted EOM
 
   // Resend
-  { platformSlug: 'resend', name: 'Email Sending', project: 'homegrif', serviceType: 'api_usage', monthlyCostEstimate: null },
+  { platformSlug: 'resend', name: 'Email Sending', project: 'homegrif.com', serviceType: 'api_usage', monthlyCostEstimate: '0.00' },
 
   // Turso
-  { platformSlug: 'turso', name: 'oncofiles-db', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: null },
+  { platformSlug: 'turso', name: 'oncofiles-db', project: 'oncoteam', serviceType: 'database', monthlyCostEstimate: '0.00' },
 
   // UptimeRobot
-  { platformSlug: 'uptimerobot', name: 'Monitoring (5 monitors)', project: null, serviceType: 'monitoring', monthlyCostEstimate: '0.00' },
+  { platformSlug: 'uptimerobot', name: 'Monitoring (10 monitors)', project: null, serviceType: 'monitoring', monthlyCostEstimate: '0.00' },
+
+  // Websupport — 18 domains + 1 hosting + 1 email (scraped 2026-03-24)
+  { platformSlug: 'websupport', name: 'Hosting Super (instarea)', project: 'instarea', serviceType: 'hosting', monthlyCostEstimate: '5.00' }, // ~€60/yr
+  { platformSlug: 'websupport', name: 'infracost.eu', project: 'infracost', serviceType: 'domain', monthlyCostEstimate: '0.58' }, // ~€6.90/yr
+  { platformSlug: 'websupport', name: 'budgetco.eu', project: 'budgetco', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'oncoteam.cloud', project: 'oncoteam', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'oncofiles.com', project: 'oncofiles', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'contactrefiner.com', project: 'contacts-refiner', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'homegrif.cz', project: 'homegrif.com', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'homegrif.com', project: 'homegrif.com', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'shiftrotation.com', project: 'shiftrotation', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'repli.city', project: 'replica.city', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'replica.city', project: 'replica.city', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'goreplicity.com', project: 'replica.city', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'goreplicacity.com', project: 'replica.city', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'getwhysurvey.com', project: 'seekwhy', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'getsurveylink.com', project: 'seekwhy', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'grandpacheck.com', project: 'grandpa_check', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'pulseshape.com', project: 'pulseshape', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'instarea.com', project: 'instarea', serviceType: 'domain', monthlyCostEstimate: '0.58' },
+  { platformSlug: 'websupport', name: 'instarea.sk', project: 'instarea', serviceType: 'domain', monthlyCostEstimate: '0.58' },
 ]
 
-// Default global budget — updated to reflect actual ~$475/mo spend
+// Default global budget — updated 2026-03-24 to reflect actual ~$800/mo with Claude dual accounts
 export const budgetSeed = [
-  { name: 'Total Infrastructure', platformId: null, monthlyLimit: '550.00' },
+  { name: 'Total Infrastructure', platformId: null, monthlyLimit: '850.00' },
 ]
 
 // Optimization opportunities — from March 2026 audit

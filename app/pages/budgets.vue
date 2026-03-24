@@ -178,22 +178,30 @@ function fmt(n: string | number) {
           />
         </div>
 
-        <div class="mt-4 flex flex-wrap gap-2">
-          <UButton
-            v-for="threshold in [
-              { field: 'alertAt50' as const, label: '50%', active: budget.alertAt50 },
-              { field: 'alertAt75' as const, label: '75%', active: budget.alertAt75 },
-              { field: 'alertAt90' as const, label: '90%', active: budget.alertAt90 },
-              { field: 'alertAt100' as const, label: '100%', active: budget.alertAt100 },
-            ]"
-            :key="threshold.field"
-            size="xs"
-            :variant="threshold.active ? 'solid' : 'outline'"
-            :color="threshold.active ? 'primary' : 'neutral'"
-            :label="threshold.label"
-            :disabled="!loggedIn"
-            @click="loggedIn && toggleThreshold(budget, threshold.field)"
-          />
+        <div class="mt-4">
+          <p class="text-xs text-[var(--ui-text-dimmed)] mb-2">
+            Alert thresholds — click to toggle. Alerts fire once per month when EOM estimate reaches the threshold.
+            <span class="text-[var(--ui-text-muted)]">75%+ → email + WhatsApp</span>
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="threshold in [
+                { field: 'alertAt50' as const, label: '50%', active: budget.alertAt50, severity: 'info', channel: 'log only' },
+                { field: 'alertAt75' as const, label: '75%', active: budget.alertAt75, severity: 'warning', channel: 'email + WhatsApp' },
+                { field: 'alertAt90' as const, label: '90%', active: budget.alertAt90, severity: 'warning', channel: 'email + WhatsApp' },
+                { field: 'alertAt100' as const, label: '100%', active: budget.alertAt100, severity: 'critical', channel: 'email + WhatsApp' },
+              ]"
+              :key="threshold.field"
+              size="xs"
+              :variant="threshold.active ? 'solid' : 'outline'"
+              :color="threshold.active ? (threshold.severity === 'critical' ? 'error' : threshold.severity === 'warning' ? 'warning' : 'primary') : 'neutral'"
+              :icon="threshold.active ? 'i-lucide-bell-ring' : 'i-lucide-bell-off'"
+              :label="threshold.label"
+              :title="`${threshold.active ? 'ON' : 'OFF'} — Alert at $${(parseFloat(budget.monthlyLimit) * parseInt(threshold.label) / 100).toFixed(0)} (${threshold.channel}). Click to ${threshold.active ? 'disable' : 'enable'}.`"
+              :disabled="!loggedIn"
+              @click="loggedIn && toggleThreshold(budget, threshold.field)"
+            />
+          </div>
         </div>
       </UCard>
     </div>

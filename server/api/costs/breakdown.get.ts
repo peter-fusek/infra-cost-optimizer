@@ -146,11 +146,36 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Platform-level costs without service assignment
+  // Platform-level costs without service assignment — create synthetic "Unallocated" rows
   for (const a of actuals) {
     if (a.serviceId === null) {
       const total = parseFloat(a.total || '0')
-      platformCostExtras.set(a.platformId, (platformCostExtras.get(a.platformId) ?? 0) + total)
+      if (total <= 0) continue
+      const platformInfo = allServices.find(s => s.platformId === a.platformId)
+      if (!platformInfo) {
+        platformCostExtras.set(a.platformId, (platformCostExtras.get(a.platformId) ?? 0) + total)
+        continue
+      }
+      const eom = progress > 0 ? total / progress : total
+      allSvcBreakdowns.push({
+        serviceId: -a.platformId, // negative ID for synthetic rows
+        name: 'Unallocated',
+        project: null,
+        platformName: platformInfo.platformName,
+        platformSlug: platformInfo.platformSlug,
+        platformType: platformInfo.platformType,
+        serviceType: a.costType || 'usage',
+        estimateUsd: 0,
+        estimateEur: 0,
+        actualMtdUsd: Math.round(total * 100) / 100,
+        actualMtdEur: toEur(total),
+        eomUsd: Math.round(eom * 100) / 100,
+        eomEur: toEur(eom),
+        costType: a.costType ?? 'usage',
+        collectionMethod: a.collectionMethod ?? 'manual',
+        recordCount: a.count,
+        variance: 0,
+      })
     }
   }
 
@@ -199,7 +224,7 @@ export default defineEventHandler(async (event) => {
     group.totalEomUsd += svc.eomUsd
   }
 
-  // Add platform-level extras (only for platform grouping)
+  // Add platform-level extras for platforms with NO services at all
   if (groupBy === 'platform') {
     for (const [platformId, extra] of platformCostExtras) {
       const slug = allServices.find(s => s.platformId === platformId)?.platformSlug
