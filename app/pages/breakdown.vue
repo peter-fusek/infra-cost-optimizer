@@ -108,6 +108,119 @@ const platformTooltips: Record<string, string> = {
   'anthropic': 'Anthropic Claude API — programmatic access for agents, MCP servers, and automations. Pay-per-token from prepaid credits.',
   'claude-max': 'Claude Max — subscription for claude.ai web/app. Includes Extra Usage Credits for heavy use months.',
 }
+
+// CSV export
+const { downloadCsv } = useCsvExport()
+
+function exportBreakdownCsv() {
+  if (!data.value) return
+  const headers = ['Group', 'Service', 'Platform', 'Project', 'Type', 'Estimate USD', 'MTD USD', 'EOM USD', 'Variance USD', 'Source']
+  const rows: (string | number | null)[][] = []
+  for (const group of filteredGroups.value) {
+    for (const svc of group.services) {
+      rows.push([group.label, svc.name, svc.platformName, svc.project, svc.serviceType, svc.estimateUsd, svc.actualMtdUsd, svc.eomUsd, svc.variance, svc.collectionMethod])
+    }
+  }
+  const month = new Date().toISOString().slice(0, 7)
+  downloadCsv(`infracost-breakdown-${month}.csv`, headers, rows)
+}
+
+// Sorting
+type SortKey = 'name' | 'cost' | 'variance'
+const sortBy = ref<SortKey>('cost')
+
+const SORT_OPTIONS = [
+  { label: 'Name A-Z', value: 'name' as const },
+  { label: 'Cost (highest)', value: 'cost' as const },
+  { label: 'Variance (highest)', value: 'variance' as const },
+]
+
+// Filtering
+const filterProject = ref<string>('')
+const searchQuery = ref('')
+
+// Available projects for filter dropdown
+const projectOptions = computed(() => {
+  if (!data.value) return []
+  return ['', ...data.value.projects].map(p => ({ label: p || 'All projects', value: p }))
+})
+
+// Sorted + filtered groups
+const filteredGroups = computed(() => {
+  if (!data.value) return []
+  let groups = [...data.value.groups]
+
+  // Filter by project (when grouping by platform, show only groups that have services for that project)
+  if (filterProject.value) {
+    groups = groups.map(g => ({
+      ...g,
+      services: g.services.filter(s => s.project === filterProject.value),
+    })).filter(g => g.services.length > 0)
+  }
+
+  // Filter by search query (across service names)
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    groups = groups.map(g => ({
+      ...g,
+      services: g.services.filter(s =>
+        s.name.toLowerCase().includes(q)
+        || s.platformName.toLowerCase().includes(q)
+        || (s.project?.toLowerCase().includes(q) ?? false),
+      ),
+    })).filter(g => g.services.length > 0 || g.label.toLowerCase().includes(q))
+  }
+
+  // Sort groups
+  if (sortBy.value === 'cost') {
+    groups.sort((a, b) => b.totalEomUsd - a.totalEomUsd)
+  }
+  else if (sortBy.value === 'variance') {
+    const totalVariance = (g: GroupBreakdown) => g.services.reduce((sum, s) => sum + Math.abs(s.variance), 0)
+    groups.sort((a, b) => totalVariance(b) - totalVariance(a))
+  }
+  else {
+    groups.sort((a, b) => a.label.localeCompare(b.label))
+  }
+
+  return groups
+})
+
+// Service sort within expanded groups
+type ServiceSortKey = 'name' | 'estimate' | 'mtd' | 'eom' | 'variance'
+const serviceSortBy = ref<ServiceSortKey>('eom')
+const serviceSortAsc = ref(false)
+
+function toggleServiceSort(key: ServiceSortKey) {
+  if (serviceSortBy.value === key) {
+    serviceSortAsc.value = !serviceSortAsc.value
+  }
+  else {
+    serviceSortBy.value = key
+    serviceSortAsc.value = key === 'name' // default asc for name, desc for numbers
+  }
+}
+
+function sortedServices(services: ServiceBreakdown[]): ServiceBreakdown[] {
+  const sorted = [...services]
+  const dir = serviceSortAsc.value ? 1 : -1
+  sorted.sort((a, b) => {
+    switch (serviceSortBy.value) {
+      case 'name': return dir * a.name.localeCompare(b.name)
+      case 'estimate': return dir * (a.estimateUsd - b.estimateUsd)
+      case 'mtd': return dir * (a.actualMtdUsd - b.actualMtdUsd)
+      case 'eom': return dir * (a.eomUsd - b.eomUsd)
+      case 'variance': return dir * (a.variance - b.variance)
+      default: return 0
+    }
+  })
+  return sorted
+}
+
+function sortIndicator(key: ServiceSortKey): string {
+  if (serviceSortBy.value !== key) return ''
+  return serviceSortAsc.value ? ' ↑' : ' ↓'
+}
 </script>
 
 <template>
@@ -156,6 +269,41 @@ const platformTooltips: Record<string, string> = {
     </div>
 
     <template v-else-if="data">
+      <!-- Toolbar: sort, filter, search -->
+      <div class="flex flex-wrap items-center gap-3">
+        <USelectMenu
+          v-model="sortBy"
+          :items="SORT_OPTIONS"
+          value-key="value"
+          class="w-40"
+          size="sm"
+          placeholder="Sort by..."
+        />
+        <USelectMenu
+          v-if="data.projects.length > 1"
+          v-model="filterProject"
+          :items="projectOptions"
+          value-key="value"
+          class="w-44"
+          size="sm"
+          placeholder="Filter project..."
+        />
+        <UInput
+          v-model="searchQuery"
+          icon="i-lucide-search"
+          placeholder="Search services..."
+          size="sm"
+          class="w-48"
+          :ui="{ trailing: searchQuery ? 'pr-8' : undefined }"
+        />
+        <span v-if="searchQuery || filterProject" class="text-xs text-[var(--ui-text-muted)]">
+          {{ filteredGroups.length }} group{{ filteredGroups.length !== 1 ? 's' : '' }}
+        </span>
+        <div class="ml-auto">
+          <UButton icon="i-lucide-download" label="CSV" size="sm" variant="outline" @click="exportBreakdownCsv" />
+        </div>
+      </div>
+
       <!-- Grand totals -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <UCard class="metric-card-mtd">
@@ -178,7 +326,7 @@ const platformTooltips: Record<string, string> = {
       <!-- Group accordions -->
       <div class="space-y-3">
         <UCard
-          v-for="group in data.groups"
+          v-for="group in filteredGroups"
           :id="`breakdown-${group.key}`"
           :key="group.key"
           class="cursor-pointer transition-shadow hover:shadow-md"
@@ -237,19 +385,19 @@ const platformTooltips: Record<string, string> = {
             <table class="w-full text-sm">
               <thead>
                 <tr class="text-left text-[var(--ui-text-muted)]">
-                  <th class="pb-2 font-medium">Service</th>
+                  <th class="pb-2 font-medium cursor-pointer hover:text-[var(--ui-text)] select-none" @click="toggleServiceSort('name')">Service{{ sortIndicator('name') }}</th>
                   <th v-if="groupBy === 'project'" class="pb-2 font-medium">Platform</th>
                   <th v-else class="pb-2 font-medium">Project</th>
                   <th class="pb-2 font-medium">Type</th>
-                  <th class="pb-2 text-right font-medium">Est. USD</th>
-                  <th class="pb-2 text-right font-medium">MTD USD</th>
-                  <th class="pb-2 text-right font-medium">EOM USD</th>
-                  <th class="pb-2 text-right font-medium">Variance</th>
+                  <th class="pb-2 text-right font-medium cursor-pointer hover:text-[var(--ui-text)] select-none" @click="toggleServiceSort('estimate')">Est. USD{{ sortIndicator('estimate') }}</th>
+                  <th class="pb-2 text-right font-medium cursor-pointer hover:text-[var(--ui-text)] select-none" @click="toggleServiceSort('mtd')">MTD USD{{ sortIndicator('mtd') }}</th>
+                  <th class="pb-2 text-right font-medium cursor-pointer hover:text-[var(--ui-text)] select-none" @click="toggleServiceSort('eom')">EOM USD{{ sortIndicator('eom') }}</th>
+                  <th class="pb-2 text-right font-medium cursor-pointer hover:text-[var(--ui-text)] select-none" @click="toggleServiceSort('variance')">Variance{{ sortIndicator('variance') }}</th>
                   <th class="pb-2 font-medium">Source</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="svc in group.services" :key="svc.serviceId" class="border-t border-[var(--ui-border-muted)]">
+                <tr v-for="svc in sortedServices(group.services)" :key="svc.serviceId" class="border-t border-[var(--ui-border-muted)]">
                   <td class="py-2">
                     <div class="flex items-center gap-1.5">
                       <UIcon :name="typeIcons[svc.serviceType] ?? 'i-lucide-box'" class="size-3.5 text-[var(--ui-text-muted)]" />

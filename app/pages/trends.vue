@@ -63,15 +63,44 @@ function barHeight(usd: number): string {
 function fmt(n: number) {
   return n.toFixed(2)
 }
+
+// CSV export
+const { downloadCsv } = useCsvExport()
+
+// Per-platform MoM change
+function platformMomChange(monthIdx: number, slug: string): number | null {
+  if (!data.value || monthIdx === 0) return null
+  const curr = getPlatformAmount(data.value.months[monthIdx], slug)
+  const prev = getPlatformAmount(data.value.months[monthIdx - 1], slug)
+  if (prev === 0) return curr > 0 ? 100 : null
+  return Math.round(((curr - prev) / prev) * 100)
+}
+
+function exportTrendsCsv() {
+  if (!data.value) return
+  const platforms = allPlatforms.value
+  const headers = ['Month', 'Total USD', 'Total EUR', 'MoM %', ...platforms.map(p => p.name + ' (USD)')]
+  const rows = data.value.months.map(m => [
+    m.label,
+    m.totalUsd,
+    m.totalEur,
+    m.momChange ?? '',
+    ...platforms.map(p => getPlatformAmount(m, p.slug) || ''),
+  ])
+  downloadCsv('infracost-trends.csv', headers, rows as (string | number | null)[][])
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <div>
-      <h1 class="font-display text-2xl font-black tracking-tight">Cost Trends</h1>
-      <p class="text-sm text-[var(--ui-text-muted)]">
-        Month-over-month spending &middot; 1 USD = {{ data?.eurUsdRate ?? 0.92 }} EUR
-      </p>
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="font-display text-2xl font-black tracking-tight">Cost Trends</h1>
+        <p class="text-sm text-[var(--ui-text-muted)]">
+          Month-over-month spending &middot; 1 USD = {{ data?.eurUsdRate ?? 0.92 }} EUR
+        </p>
+      </div>
+      <UButton v-if="data" icon="i-lucide-download" label="CSV" size="sm" variant="outline" @click="exportTrendsCsv" />
     </div>
 
     <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
@@ -174,9 +203,20 @@ function fmt(n: number) {
                   </template>
                   <template v-else>—</template>
                 </td>
-                <td v-for="platform in allPlatforms" :key="platform.slug" class="py-2.5 text-right font-mono">
+                <td v-for="(platform, pIdx) in allPlatforms" :key="platform.slug" class="py-2.5 text-right font-mono">
                   <template v-if="getPlatformAmount(month, platform.slug) > 0">
-                    ${{ fmt(getPlatformAmount(month, platform.slug)) }}
+                    <div>${{ fmt(getPlatformAmount(month, platform.slug)) }}</div>
+                    <div
+                      v-if="platformMomChange(data.months.indexOf(month), platform.slug) !== null"
+                      class="text-[10px]"
+                      :class="{
+                        'text-[var(--ui-error)]': (platformMomChange(data.months.indexOf(month), platform.slug) ?? 0) > 0,
+                        'text-[var(--ui-success)]': (platformMomChange(data.months.indexOf(month), platform.slug) ?? 0) < 0,
+                        'text-[var(--ui-text-dimmed)]': platformMomChange(data.months.indexOf(month), platform.slug) === 0,
+                      }"
+                    >
+                      {{ (platformMomChange(data.months.indexOf(month), platform.slug) ?? 0) > 0 ? '+' : '' }}{{ platformMomChange(data.months.indexOf(month), platform.slug) }}%
+                    </div>
                   </template>
                   <span v-else class="text-[var(--ui-text-dimmed)]">—</span>
                 </td>

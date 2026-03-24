@@ -109,6 +109,56 @@ function statusIcon(status: string | null): string {
 function getProbe(slug: string): ProbeResult | null {
   return apiStatus.value?.platforms?.[slug] ?? null
 }
+
+// Collection run history (lazy-loaded)
+interface CollectionRun {
+  id: number
+  trigger_type: string
+  status: string
+  records_collected: number
+  error_message: string | null
+  started_at: string
+  completed_at: string | null
+  duration_ms: number | null
+}
+
+const runsCache = ref<Record<string, CollectionRun[]>>({})
+const loadingRuns = ref<Set<string>>(new Set())
+const showTab = ref<Record<string, 'services' | 'runs'>>({})
+
+async function loadRuns(slug: string) {
+  if (runsCache.value[slug] || loadingRuns.value.has(slug)) return
+  loadingRuns.value.add(slug)
+  try {
+    const data = await $fetch<{ runs: CollectionRun[] }>(`/api/platforms/${slug}/runs`)
+    runsCache.value[slug] = data.runs
+  }
+  catch {
+    runsCache.value[slug] = []
+  }
+  finally {
+    loadingRuns.value.delete(slug)
+  }
+}
+
+function switchTab(slug: string, tab: 'services' | 'runs') {
+  showTab.value[slug] = tab
+  if (tab === 'runs') loadRuns(slug)
+}
+
+function fmtDuration(ms: number | null): string {
+  if (ms === null) return '—'
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
+}
+
+function runStatusColor(status: string): string {
+  if (status === 'success') return 'success'
+  if (status === 'partial') return 'warning'
+  if (status === 'failed') return 'error'
+  if (status === 'running') return 'info'
+  return 'neutral'
+}
 </script>
 
 <template>
@@ -218,48 +268,105 @@ function getProbe(slug: string): ProbeResult | null {
             </UBadge>
           </div>
 
-          <!-- Expanded services detail -->
+          <!-- Expanded detail -->
           <div v-if="expanded.has(platform.slug)" class="border-t border-[var(--ui-border)] pt-3 mt-1" @click.stop>
-            <div v-if="loadingServices.has(platform.slug)" class="flex justify-center py-4">
-              <UIcon name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-muted)]" />
+            <!-- Tab switcher -->
+            <div class="flex items-center gap-1 mb-3 rounded-lg border border-[var(--ui-border)] p-0.5 w-fit">
+              <UButton
+                size="xs"
+                :variant="(showTab[platform.slug] ?? 'services') === 'services' ? 'solid' : 'ghost'"
+                label="Services"
+                @click="switchTab(platform.slug, 'services')"
+              />
+              <UButton
+                size="xs"
+                :variant="showTab[platform.slug] === 'runs' ? 'solid' : 'ghost'"
+                label="Collection Runs"
+                @click="switchTab(platform.slug, 'runs')"
+              />
             </div>
-            <template v-else-if="serviceCache[platform.slug]?.length">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="text-left text-[var(--ui-text-muted)]">
-                    <th class="pb-2 font-medium">Service</th>
-                    <th class="pb-2 font-medium">Type</th>
-                    <th class="pb-2 font-medium">Project</th>
-                    <th class="pb-2 text-right font-medium">Est. Monthly</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="svc in serviceCache[platform.slug]" :key="svc.id" class="border-t border-[var(--ui-border-muted)]">
-                    <td class="py-1.5">
-                      <div class="flex items-center gap-1.5">
-                        <UIcon :name="typeIcons[svc.serviceType] ?? 'i-lucide-box'" class="size-3.5 text-[var(--ui-text-muted)]" />
-                        <span>{{ svc.name }}</span>
-                      </div>
-                    </td>
-                    <td class="py-1.5">
-                      <UBadge variant="subtle" size="xs" color="neutral">{{ svc.serviceType }}</UBadge>
-                    </td>
-                    <td class="py-1.5 text-[var(--ui-text-muted)]">{{ svc.project || '—' }}</td>
-                    <td class="py-1.5 text-right font-mono">{{ fmtCost(svc.monthlyCostEstimate) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="mt-3 flex justify-end">
-                <NuxtLink
-                  :to="{ path: '/breakdown', query: { groupBy: 'platform', platform: platform.slug } }"
-                  class="text-xs text-[var(--ui-primary)] hover:underline flex items-center gap-1"
-                >
-                  <UIcon name="i-lucide-arrow-right" class="size-3" />
-                  View in breakdown
-                </NuxtLink>
+
+            <!-- Services tab -->
+            <template v-if="(showTab[platform.slug] ?? 'services') === 'services'">
+              <div v-if="loadingServices.has(platform.slug)" class="flex justify-center py-4">
+                <UIcon name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-muted)]" />
               </div>
+              <template v-else-if="serviceCache[platform.slug]?.length">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="text-left text-[var(--ui-text-muted)]">
+                      <th class="pb-2 font-medium">Service</th>
+                      <th class="pb-2 font-medium">Type</th>
+                      <th class="pb-2 font-medium">Project</th>
+                      <th class="pb-2 text-right font-medium">Est. Monthly</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="svc in serviceCache[platform.slug]" :key="svc.id" class="border-t border-[var(--ui-border-muted)]">
+                      <td class="py-1.5">
+                        <div class="flex items-center gap-1.5">
+                          <UIcon :name="typeIcons[svc.serviceType] ?? 'i-lucide-box'" class="size-3.5 text-[var(--ui-text-muted)]" />
+                          <span>{{ svc.name }}</span>
+                        </div>
+                      </td>
+                      <td class="py-1.5">
+                        <UBadge variant="subtle" size="xs" color="neutral">{{ svc.serviceType }}</UBadge>
+                      </td>
+                      <td class="py-1.5 text-[var(--ui-text-muted)]">{{ svc.project || '—' }}</td>
+                      <td class="py-1.5 text-right font-mono">{{ fmtCost(svc.monthlyCostEstimate) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="mt-3 flex justify-end">
+                  <NuxtLink
+                    :to="{ path: '/breakdown', query: { groupBy: 'platform', platform: platform.slug } }"
+                    class="text-xs text-[var(--ui-primary)] hover:underline flex items-center gap-1"
+                  >
+                    <UIcon name="i-lucide-arrow-right" class="size-3" />
+                    View in breakdown
+                  </NuxtLink>
+                </div>
+              </template>
+              <p v-else class="text-sm text-[var(--ui-text-muted)] py-2">No active services</p>
             </template>
-            <p v-else class="text-sm text-[var(--ui-text-muted)] py-2">No active services</p>
+
+            <!-- Collection Runs tab -->
+            <template v-else>
+              <div v-if="loadingRuns.has(platform.slug)" class="flex justify-center py-4">
+                <UIcon name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-muted)]" />
+              </div>
+              <template v-else-if="runsCache[platform.slug]?.length">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="text-left text-[var(--ui-text-muted)]">
+                      <th class="pb-2 font-medium">Time</th>
+                      <th class="pb-2 font-medium">Trigger</th>
+                      <th class="pb-2 font-medium">Status</th>
+                      <th class="pb-2 text-right font-medium">Records</th>
+                      <th class="pb-2 text-right font-medium">Duration</th>
+                      <th class="pb-2 font-medium">Error</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="run in runsCache[platform.slug]" :key="run.id" class="border-t border-[var(--ui-border-muted)]">
+                      <td class="py-1.5 text-xs">{{ timeAgo(run.started_at) }}</td>
+                      <td class="py-1.5">
+                        <UBadge variant="outline" size="xs" color="neutral">{{ run.trigger_type }}</UBadge>
+                      </td>
+                      <td class="py-1.5">
+                        <UBadge :color="(runStatusColor(run.status) as any)" variant="subtle" size="xs">{{ run.status }}</UBadge>
+                      </td>
+                      <td class="py-1.5 text-right font-mono">{{ run.records_collected }}</td>
+                      <td class="py-1.5 text-right font-mono text-[var(--ui-text-muted)]">{{ fmtDuration(run.duration_ms) }}</td>
+                      <td class="py-1.5 text-xs text-[var(--ui-error)] truncate max-w-[200px]" :title="run.error_message || ''">
+                        {{ run.error_message || '—' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+              <p v-else class="text-sm text-[var(--ui-text-muted)] py-2">No collection runs recorded</p>
+            </template>
           </div>
         </div>
       </UCard>

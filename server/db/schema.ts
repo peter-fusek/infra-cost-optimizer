@@ -64,6 +64,7 @@ export const services = pgTable('services', {
   deletedAt: timestamp('deleted_at'),
 }, (t) => [
   index('idx_services_platform').on(t.platformId),
+  index('idx_services_project').on(t.project),
 ])
 
 // --- Cost Records ---
@@ -88,6 +89,7 @@ export const costRecords = pgTable('cost_records', {
   index('idx_cost_records_platform').on(t.platformId),
   index('idx_cost_records_period').on(t.periodStart, t.periodEnd),
   index('idx_cost_records_platform_period').on(t.platformId, t.periodStart, t.periodEnd),
+  index('idx_cost_records_record_date').on(t.recordDate),
 ])
 
 // --- Budgets ---
