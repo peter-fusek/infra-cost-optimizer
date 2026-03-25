@@ -40,6 +40,86 @@ const { loggedIn } = useUserSession()
 const toast = useToast()
 const submitting = ref(false)
 
+// CSV Import
+interface CsvRow {
+  platformSlug: string
+  amount: number
+  costType: string
+  date: string
+  notes: string
+}
+
+const csvRows = ref<CsvRow[]>([])
+const csvErrors = ref<string[]>([])
+const importing = ref(false)
+const showCsvPreview = ref(false)
+
+function parseCsv(text: string): CsvRow[] {
+  const lines = text.trim().split('\n')
+  if (lines.length < 2) return []
+
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+  const slugIdx = headers.findIndex(h => h === 'platform' || h === 'platformslug')
+  const amountIdx = headers.findIndex(h => h === 'amount')
+  const typeIdx = headers.findIndex(h => h === 'costtype' || h === 'type' || h === 'cost_type')
+  const dateIdx = headers.findIndex(h => h === 'date')
+  const notesIdx = headers.findIndex(h => h === 'notes')
+
+  if (slugIdx === -1 || amountIdx === -1) return []
+
+  return lines.slice(1).filter(l => l.trim()).map((line) => {
+    const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''))
+    return {
+      platformSlug: cols[slugIdx] || '',
+      amount: Number(cols[amountIdx]) || 0,
+      costType: cols[typeIdx] || 'usage',
+      date: cols[dateIdx] || new Date().toISOString().split('T')[0],
+      notes: cols[notesIdx] || '',
+    }
+  })
+}
+
+function onFileChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => {
+    const rows = parseCsv(reader.result as string)
+    if (rows.length === 0) {
+      toast.add({ title: 'Invalid CSV', description: 'CSV must have headers: platform, amount (and optionally: type, date, notes)', color: 'error' })
+      return
+    }
+    csvRows.value = rows
+    csvErrors.value = []
+    showCsvPreview.value = true
+  }
+  reader.readAsText(file)
+}
+
+async function importCsv() {
+  importing.value = true
+  try {
+    const result = await $fetch<{ inserted: number; errors: string[] }>('/api/costs/import', {
+      method: 'POST',
+      body: { rows: csvRows.value },
+    })
+    csvErrors.value = result.errors
+    if (result.inserted > 0) {
+      toast.add({ title: 'Import complete', description: `${result.inserted} record(s) imported${result.errors.length ? `, ${result.errors.length} error(s)` : ''}`, color: 'success' })
+    }
+    if (result.inserted > 0 && result.errors.length === 0) {
+      showCsvPreview.value = false
+      csvRows.value = []
+    }
+  }
+  catch (err: any) {
+    toast.add({ title: 'Import failed', description: err.data?.message || 'Failed to import', color: 'error' })
+  }
+  finally {
+    importing.value = false
+  }
+}
+
 async function onSubmit(event: FormSubmitEvent<FormState>) {
   submitting.value = true
   try {
@@ -112,6 +192,70 @@ async function onSubmit(event: FormSubmitEvent<FormState>) {
 
         <UButton type="submit" label="Save Cost Record" :loading="submitting" block />
       </UForm>
+    </UCard>
+
+    <!-- CSV Import -->
+    <UCard v-if="loggedIn">
+      <template #header>
+        <div class="flex items-center gap-2">
+          <UIcon name="i-lucide-file-spreadsheet" class="size-5" />
+          <span class="font-display font-bold">CSV Import</span>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <p class="text-sm text-[var(--ui-text-muted)]">
+          Upload a CSV with headers: <code class="text-xs">platform, amount, type, date, notes</code>
+        </p>
+
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          class="block w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-[var(--ui-bg-elevated)] file:px-4 file:py-2 file:text-sm file:font-medium"
+          @change="onFileChange"
+        />
+
+        <!-- Preview -->
+        <div v-if="showCsvPreview && csvRows.length" class="space-y-3">
+          <p class="text-sm font-medium">Preview ({{ csvRows.length }} rows)</p>
+
+          <div class="max-h-64 overflow-auto rounded border border-[var(--ui-border)]">
+            <table class="w-full text-xs">
+              <thead class="sticky top-0 bg-[var(--ui-bg-elevated)]">
+                <tr>
+                  <th class="px-2 py-1 text-left">#</th>
+                  <th class="px-2 py-1 text-left">Platform</th>
+                  <th class="px-2 py-1 text-right">Amount</th>
+                  <th class="px-2 py-1 text-left">Type</th>
+                  <th class="px-2 py-1 text-left">Date</th>
+                  <th class="px-2 py-1 text-left">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, i) in csvRows" :key="i" class="border-t border-[var(--ui-border)]">
+                  <td class="px-2 py-1 text-[var(--ui-text-dimmed)]">{{ i + 1 }}</td>
+                  <td class="px-2 py-1">{{ row.platformSlug }}</td>
+                  <td class="px-2 py-1 text-right font-mono">${{ row.amount.toFixed(2) }}</td>
+                  <td class="px-2 py-1">{{ row.costType }}</td>
+                  <td class="px-2 py-1">{{ row.date }}</td>
+                  <td class="px-2 py-1 truncate max-w-32">{{ row.notes }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Errors -->
+          <div v-if="csvErrors.length" class="rounded border border-[var(--ui-error)] bg-[var(--ui-bg-elevated)] p-3 space-y-1">
+            <p class="text-sm font-medium text-[var(--ui-error)]">Import errors:</p>
+            <p v-for="err in csvErrors" :key="err" class="text-xs text-[var(--ui-text-muted)]">{{ err }}</p>
+          </div>
+
+          <div class="flex gap-2">
+            <UButton label="Import" icon="i-lucide-upload" :loading="importing" @click="importCsv" />
+            <UButton label="Cancel" variant="ghost" @click="showCsvPreview = false; csvRows = []" />
+          </div>
+        </div>
+      </div>
     </UCard>
   </div>
 </template>
