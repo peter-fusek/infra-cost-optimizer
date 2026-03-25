@@ -2,7 +2,7 @@ services:
   - type: web
     name: infracost
     runtime: node
-    plan: free
+    plan: starter
     buildCommand: pnpm install && pnpm drizzle-kit push && pnpm build
     startCommand: node .output/server/index.mjs
     # Custom domain infracost.eu configured via Render dashboard (not supported in blueprint on free plan)
