@@ -51,6 +51,7 @@
 - Shared formatters: app/utils/time.ts (timeAgo), app/utils/icons.ts (typeIcons) — auto-imported by Nuxt
 - Fetch timeouts: AbortSignal.timeout(15_000) on all external calls, 30s for Railway GraphQL
 - Retry: server/utils/retry.ts — withRetry() + fetchWithRetry() with exponential backoff for transient failures
+- GitHub API: server/utils/github.ts — githubHeaders(token) shared by discovery, drift-detector, repo-stats
 - Error handling: always surface errors in errors[] array, never empty catch blocks
 - Collection dedup: delete old records before inserting new per platform+period
 - Breakdown: sort groups (name/cost/variance), filter by project, search services, sortable column headers
