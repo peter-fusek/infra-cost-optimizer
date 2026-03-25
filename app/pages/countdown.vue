@@ -56,6 +56,43 @@ const { collecting, triggerCollection } = useCollectionTrigger(async () => {
   await refreshNuxtData()
 })
 
+// Claude Max subscription quick-update
+const { data: subCheck, refresh: refreshSubCheck } = await useFetch<{
+  recorded: boolean
+  recordId: number | null
+  amount: number | null
+  month: string
+}>('/api/costs/subscription-check', { query: { platform: 'claude-max' } })
+
+const recordingSub = ref(false)
+
+async function recordClaudeMaxSubscription() {
+  recordingSub.value = true
+  try {
+    const now = new Date()
+    const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' })
+    await $fetch('/api/costs/manual', {
+      method: 'POST',
+      body: {
+        platformSlug: 'claude-max',
+        amount: 196,
+        costType: 'subscription',
+        date: now.toISOString().split('T')[0],
+        serviceName: 'Max Subscription (personal)',
+        notes: `Claude Max subscription — ${monthName}`,
+      },
+    })
+    await refreshSubCheck()
+    await refreshNuxtData()
+  }
+  catch {
+    // error handled by global error handler
+  }
+  finally {
+    recordingSub.value = false
+  }
+}
+
 const loading = computed(() => depletionStatus.value === 'pending' || limitsStatus.value === 'pending')
 
 // Risk to urgency score (lower = more urgent)
@@ -164,6 +201,41 @@ function depletionProgressPct(p: DepletionPlatform) {
         {{ healthyCount }} healthy
       </UBadge>
     </div>
+
+    <!-- Monthly Subscription Quick Update -->
+    <UCard v-if="loggedIn" class="metric-card-budget">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <UIcon
+            :name="subCheck?.recorded ? 'i-lucide-check-circle' : 'i-lucide-circle-dashed'"
+            class="size-5"
+            :class="subCheck?.recorded ? 'text-[var(--ui-success)]' : 'text-[var(--ui-text-dimmed)]'"
+          />
+          <div>
+            <p class="font-display font-bold">Claude Max — $196/mo</p>
+            <p class="text-xs text-[var(--ui-text-muted)]">
+              <template v-if="subCheck?.recorded">
+                Recorded for {{ subCheck.month }}
+              </template>
+              <template v-else>
+                Not yet recorded for {{ subCheck?.month }}
+              </template>
+            </p>
+          </div>
+        </div>
+        <UButton
+          v-if="!subCheck?.recorded"
+          icon="i-lucide-plus"
+          label="Record"
+          size="sm"
+          :loading="recordingSub"
+          @click="recordClaudeMaxSubscription"
+        />
+        <UBadge v-else color="success" variant="subtle" size="sm">
+          ${{ subCheck.amount?.toFixed(2) }} recorded
+        </UBadge>
+      </div>
+    </UCard>
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-8" role="status" aria-label="Loading">
