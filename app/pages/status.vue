@@ -87,6 +87,12 @@ interface DriftResponse {
 const { data, status, refresh } = await useFetch<StatusResponse>('/api/status')
 const { data: projectsData } = await useFetch<{ projects: Project[] }>('/api/projects')
 const { data: driftData } = await useFetch<DriftResponse>('/api/drift')
+const { data: repoStats } = await useFetch<{
+  stars: number; forks: number; watchers: number; openIssues: number
+  branchCount: number; sizeKb: number; language: string | null; pushedAt: string | null
+  clones14d: number; clonesUnique14d: number; views14d: number; viewsUnique14d: number
+  errors: string[]; fetchedAt: string
+}>('/api/github/repo-stats')
 const { loggedIn } = useUserSession()
 
 const refreshing = ref(false)
@@ -410,6 +416,75 @@ const pausedProjects = computed(() => projectsData.value?.projects?.filter(p => 
             </UBadge>
           </div>
         </div>
+      </div>
+
+      <!-- Repository Stats -->
+      <div v-if="repoStats">
+        <h2 class="font-display text-lg font-bold mb-3">Repository</h2>
+        <UCard class="metric-card-budget">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-github" class="size-5" />
+                <a
+                  href="https://github.com/peter-fusek/infra-cost-optimizer"
+                  target="_blank"
+                  class="font-medium hover:underline"
+                >
+                  peter-fusek/infra-cost-optimizer
+                </a>
+                <UBadge v-if="repoStats.language" variant="subtle" color="neutral" size="xs">
+                  {{ repoStats.language }}
+                </UBadge>
+              </div>
+              <span v-if="repoStats.pushedAt" class="text-xs text-[var(--ui-text-dimmed)]">
+                pushed {{ timeAgo(repoStats.pushedAt) }}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div class="rounded bg-[var(--ui-bg-elevated)] px-3 py-2 text-center">
+                <p class="text-xl font-bold tabular-nums">{{ repoStats.stars }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Stars</p>
+              </div>
+              <div class="rounded bg-[var(--ui-bg-elevated)] px-3 py-2 text-center">
+                <p class="text-xl font-bold tabular-nums">{{ repoStats.forks }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Forks</p>
+              </div>
+              <div class="rounded bg-[var(--ui-bg-elevated)] px-3 py-2 text-center">
+                <p class="text-xl font-bold tabular-nums">{{ repoStats.watchers }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Watchers</p>
+              </div>
+              <div class="rounded bg-[var(--ui-bg-elevated)] px-3 py-2 text-center">
+                <p class="text-xl font-bold tabular-nums">{{ repoStats.branchCount }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Branches</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div class="text-center">
+                <p class="font-mono font-medium">{{ repoStats.views14d }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Views (14d)</p>
+              </div>
+              <div class="text-center">
+                <p class="font-mono font-medium">{{ repoStats.viewsUnique14d }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Unique visitors</p>
+              </div>
+              <div class="text-center">
+                <p class="font-mono font-medium">{{ repoStats.clones14d }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Clones (14d)</p>
+              </div>
+              <div class="text-center">
+                <p class="font-mono font-medium">{{ repoStats.clonesUnique14d }}</p>
+                <p class="text-xs text-[var(--ui-text-muted)]">Unique cloners</p>
+              </div>
+            </div>
+
+            <p v-if="repoStats.sizeKb" class="text-xs text-[var(--ui-text-dimmed)] text-right">
+              {{ (repoStats.sizeKb / 1024).toFixed(1) }} MB · {{ repoStats.openIssues }} open issues
+            </p>
+          </div>
+        </UCard>
       </div>
 
       <!-- GitHub Discovery -->
