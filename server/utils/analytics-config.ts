@@ -20,9 +20,9 @@ export interface ProjectAnalyticsConfig {
 export const ANALYTICS_CONFIG: ProjectAnalyticsConfig[] = [
   { slug: 'infracost', ga4PropertyId: '529880367', gscSiteUrl: 'https://infracost.eu' },
   { slug: 'homegrif.com', ga4PropertyId: '516113889', gscSiteUrl: 'https://homegrif.com' },
-  { slug: 'oncoteam', ga4PropertyId: '529091873', gscSiteUrl: 'https://dashboard.oncoteam.cloud' },
+  { slug: 'oncoteam', ga4PropertyId: '529091873', gscSiteUrl: 'https://oncoteam.cloud' },
   { slug: 'oncofiles', ga4PropertyId: '529720507', gscSiteUrl: 'https://oncofiles.com' },
-  { slug: 'contacts-refiner', ga4PropertyId: '529886218', gscSiteUrl: 'https://contactrefiner.com' },
+  { slug: 'contacts-refiner', ga4PropertyId: '529886218', gscSiteUrl: 'sc-domain:contactrefiner.com' },
   { slug: 'budgetco', ga4PropertyId: '529309393', gscSiteUrl: 'sc-domain:budgetco.eu' },
   { slug: 'pulseshape', ga4PropertyId: '494047490', gscSiteUrl: 'sc-domain:pulseshape.com' },
   { slug: 'instarea', ga4PropertyId: null, gscSiteUrl: 'sc-domain:instarea.com' },
