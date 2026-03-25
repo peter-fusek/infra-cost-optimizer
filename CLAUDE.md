@@ -46,6 +46,8 @@
 - Bug issue markdown: server/utils/bug-report-markdown.ts (buildBugIssueBody, BugContext type)
 - Collection trigger: app/composables/useCollectionTrigger.ts — shared composable for all refresh buttons
 - CSV export: app/composables/useCsvExport.ts — client-side CSV generation + download
+- CSV import: POST /api/costs/import — bulk insert from CSV (max 200 rows, collectionMethod: csv_import)
+- Subscription check: GET /api/costs/subscription-check?platform= — dedup check for monthly subscription records
 - Shared formatters: app/utils/time.ts (timeAgo), app/utils/icons.ts (typeIcons) — auto-imported by Nuxt
 - Fetch timeouts: AbortSignal.timeout(15_000) on all external calls, 30s for Railway GraphQL
 - Retry: server/utils/retry.ts — withRetry() + fetchWithRetry() with exponential backoff for transient failures
