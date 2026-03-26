@@ -116,9 +116,7 @@ const totalSavings = computed(() => {
       </UButton>
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
-    </div>
+    <SkeletonLoader v-if="status === 'pending'" variant="list" :rows="4" />
 
     <div v-else-if="!items?.length" class="py-8 text-center text-[var(--ui-text-muted)]">
       <p>No optimization opportunities found.</p>

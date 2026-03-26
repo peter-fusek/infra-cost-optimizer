@@ -138,9 +138,7 @@ function fmt(n: string | number) {
     </UCard>
 
     <!-- Loading -->
-    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin text-emerald-500" />
-    </div>
+    <SkeletonLoader v-if="status === 'pending'" variant="list" :rows="3" />
 
     <!-- Empty state -->
     <div v-else-if="!data?.budgets?.length" class="py-12 text-center">

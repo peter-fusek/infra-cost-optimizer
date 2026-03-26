@@ -231,9 +231,7 @@ const pausedProjects = computed(() => projectsData.value?.projects?.filter(p => 
       />
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
-    </div>
+    <SkeletonLoader v-if="status === 'pending'" variant="list" :rows="4" />
 
     <template v-else-if="data && !data.error">
       <!-- Overall status banner -->

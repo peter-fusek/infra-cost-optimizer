@@ -57,40 +57,50 @@ const { collecting, triggerCollection } = useCollectionTrigger(async () => {
   await refreshNuxtData()
 })
 
-// Claude Max subscription quick-update
-const { data: subCheck, refresh: refreshSubCheck } = await useFetch<{
-  recorded: boolean
-  recordId: number | null
-  amount: number | null
+// Manual platform reminders (Claude Max, Google Services, Websupport)
+interface ManualReminder {
+  slug: string
+  name: string
+  lastRecordedDate: string | null
+  daysSinceLastRecord: number | null
+  currentMonthRecorded: boolean
+  currentMonthAmount: number | null
+  expectedAmount: number | null
+  costType: string
+  serviceName: string
+}
+
+const { data: remindersData, refresh: refreshReminders } = await useFetch<{
+  reminders: ManualReminder[]
   month: string
-}>('/api/costs/subscription-check', { query: { platform: 'claude-max' } })
+}>('/api/costs/manual-reminders')
 
-const recordingSub = ref(false)
+const recordingSlug = ref<string | null>(null)
 
-async function recordClaudeMaxSubscription() {
-  recordingSub.value = true
+async function recordManualCost(reminder: ManualReminder) {
+  recordingSlug.value = reminder.slug
   try {
     const now = new Date()
     const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' })
     await $fetch('/api/costs/manual', {
       method: 'POST',
       body: {
-        platformSlug: 'claude-max',
-        amount: 196,
-        costType: 'subscription',
+        platformSlug: reminder.slug,
+        amount: reminder.expectedAmount,
+        costType: reminder.costType,
         date: now.toISOString().split('T')[0],
-        serviceName: 'Max Subscription (personal)',
-        notes: `Claude Max subscription — ${monthName}`,
+        serviceName: reminder.serviceName,
+        notes: `${reminder.name} — ${monthName}`,
       },
     })
-    await refreshSubCheck()
+    await refreshReminders()
     await refreshNuxtData()
   }
   catch (err: any) {
-    toast.add({ title: 'Failed to record subscription', description: err?.data?.message || 'Unknown error', color: 'error' })
+    toast.add({ title: `Failed to record ${reminder.name}`, description: err?.data?.message || 'Unknown error', color: 'error' })
   }
   finally {
-    recordingSub.value = false
+    recordingSlug.value = null
   }
 }
 
@@ -203,45 +213,49 @@ function depletionProgressPct(p: DepletionPlatform) {
       </UBadge>
     </div>
 
-    <!-- Monthly Subscription Quick Update -->
-    <UCard v-if="loggedIn" class="metric-card-budget">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <UIcon
-            :name="subCheck?.recorded ? 'i-lucide-check-circle' : 'i-lucide-circle-dashed'"
-            class="size-5"
-            :class="subCheck?.recorded ? 'text-[var(--ui-success)]' : 'text-[var(--ui-text-dimmed)]'"
-          />
-          <div>
-            <p class="font-display font-bold">Claude Max — $196/mo</p>
-            <p class="text-xs text-[var(--ui-text-muted)]">
-              <template v-if="subCheck?.recorded">
-                Recorded for {{ subCheck.month }}
-              </template>
-              <template v-else>
-                Not yet recorded for {{ subCheck?.month }}
-              </template>
-            </p>
+    <!-- Monthly Manual Cost Reminders -->
+    <div v-if="loggedIn && remindersData?.reminders?.length" class="space-y-3">
+      <h2 class="font-display text-sm font-bold text-[var(--ui-text-muted)] uppercase tracking-wider">Monthly Tasks</h2>
+      <UCard v-for="r in remindersData.reminders" :key="r.slug" class="metric-card-budget">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <UIcon
+              :name="r.currentMonthRecorded ? 'i-lucide-check-circle' : (r.daysSinceLastRecord !== null && r.daysSinceLastRecord > 35) ? 'i-lucide-alert-circle' : 'i-lucide-circle-dashed'"
+              class="size-5"
+              :class="r.currentMonthRecorded ? 'text-[var(--ui-success)]' : (r.daysSinceLastRecord !== null && r.daysSinceLastRecord > 35) ? 'text-[var(--ui-warning)]' : 'text-[var(--ui-text-dimmed)]'"
+            />
+            <div>
+              <p class="font-display font-bold">{{ r.name }} — ${{ r.expectedAmount }}/mo</p>
+              <p class="text-xs text-[var(--ui-text-muted)]">
+                <template v-if="r.currentMonthRecorded">
+                  Recorded for {{ remindersData.month }}
+                </template>
+                <template v-else-if="r.daysSinceLastRecord !== null && r.daysSinceLastRecord > 35">
+                  Overdue — last recorded {{ r.daysSinceLastRecord }}d ago
+                </template>
+                <template v-else>
+                  Not yet recorded for {{ remindersData.month }}
+                </template>
+              </p>
+            </div>
           </div>
+          <UButton
+            v-if="!r.currentMonthRecorded"
+            icon="i-lucide-plus"
+            label="Record"
+            size="sm"
+            :loading="recordingSlug === r.slug"
+            @click="recordManualCost(r)"
+          />
+          <UBadge v-else color="success" variant="subtle" size="sm">
+            ${{ r.currentMonthAmount?.toFixed(2) }} recorded
+          </UBadge>
         </div>
-        <UButton
-          v-if="!subCheck?.recorded"
-          icon="i-lucide-plus"
-          label="Record"
-          size="sm"
-          :loading="recordingSub"
-          @click="recordClaudeMaxSubscription"
-        />
-        <UBadge v-else color="success" variant="subtle" size="sm">
-          ${{ subCheck.amount?.toFixed(2) }} recorded
-        </UBadge>
-      </div>
-    </UCard>
+      </UCard>
+    </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex justify-center py-8" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin text-emerald-500" />
-    </div>
+    <SkeletonLoader v-if="loading" variant="countdown" :rows="4" />
 
     <!-- Countdown items -->
     <div v-else class="space-y-4">

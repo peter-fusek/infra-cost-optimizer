@@ -264,9 +264,7 @@ function sortIndicator(key: ServiceSortKey): string {
       </div>
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
-    </div>
+    <SkeletonLoader v-if="status === 'pending'" variant="table" :rows="8" />
 
     <template v-else-if="data">
       <StaleDataBanner :last-collected-at="data.lastUpdatedAt" />

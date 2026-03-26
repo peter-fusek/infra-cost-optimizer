@@ -103,9 +103,7 @@ function exportTrendsCsv() {
       <UButton v-if="data" icon="i-lucide-download" label="CSV" size="sm" variant="outline" @click="exportTrendsCsv" />
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
-    </div>
+    <SkeletonLoader v-if="status === 'pending'" variant="chart" />
 
     <template v-else-if="data">
       <!-- Bar chart -->

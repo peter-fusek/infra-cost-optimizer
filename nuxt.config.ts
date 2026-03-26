@@ -48,6 +48,8 @@ export default defineNuxtConfig({
     scheduledTasks: {
       // Run cost collection daily at 06:00 UTC
       '0 6 * * *': ['collect'],
+      // Weekly cost digest email — Mondays at 07:00 UTC
+      '0 7 * * 1': ['weekly-digest'],
     },
   },
   runtimeConfig: {

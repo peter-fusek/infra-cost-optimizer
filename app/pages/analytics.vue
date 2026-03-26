@@ -50,7 +50,7 @@ interface AnalyticsSummary {
   fetchedAt: string
 }
 
-const { data, status } = await useFetch<AnalyticsSummary>('/api/analytics/summary')
+const { data, status, error } = await useFetch<AnalyticsSummary>('/api/analytics/summary', { lazy: true })
 
 // Sparkline SVG generator
 function sparklinePath(values: number[], width: number = 120, height: number = 32): string {
@@ -135,8 +135,19 @@ function toggleTips(slug: string) {
     </div>
 
     <!-- Loading -->
-    <div v-if="status === 'pending'" class="flex justify-center py-12" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin text-emerald-500" />
+    <SkeletonLoader v-if="status === 'pending'" variant="list" :rows="4" />
+
+    <!-- Error state -->
+    <div v-else-if="error" class="rounded-xl border border-dashed border-[var(--ui-error)] px-8 py-12 text-center">
+      <UIcon name="i-lucide-alert-triangle" class="mx-auto size-10 text-[var(--ui-error)]" />
+      <p class="mt-3 font-display font-bold text-lg">Failed to load analytics</p>
+      <p class="mt-1 text-sm text-[var(--ui-text-muted)] max-w-md mx-auto">
+        {{ error.statusCode === 401 || error.statusCode === 403
+          ? 'GCP service account credentials may be expired or missing. Check GCP_SERVICE_ACCOUNT_JSON in your environment.'
+          : error.statusCode === 429
+            ? 'GA4/GSC API quota exceeded. Try again in a few minutes.'
+            : error.data?.message || 'An unexpected error occurred while fetching analytics data.' }}
+      </p>
     </div>
 
     <template v-else-if="data">

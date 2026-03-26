@@ -31,11 +31,15 @@
   - API: GET /api/analytics/traffic, /api/analytics/search, /api/analytics/summary
   - SEO scoring: 0-100 based on CTR, position, impressions, click volume, trend direction
   - LLMEO tips: structured data, content recommendations for AI crawler visibility
-- Pages: 10 total (/, /breakdown, /trends, /optimizations, /countdown, /analytics, /status, /platforms, /budgets, /manual)
-  - /countdown = merged Depletion + Limits + Free Tier Expiry — urgency-sorted
+- Pages: 11 total (/, /breakdown, /trends, /optimizations, /countdown, /alerts, /analytics, /status, /platforms, /budgets, /manual)
+  - /countdown = merged Depletion + Limits + Free Tier Expiry — urgency-sorted + Monthly Tasks (manual platform reminders)
+  - /alerts = filterable alert history (severity, status, type, date range) with acknowledge/resolve actions
   - /status = UptimeRobot monitors + Projects grid (expandable with change timeline) + Drift alerts + GitHub Discovery (auth-gated)
   - Project cards: clickable expand with change history, yellow ring for "recently changed" (7 days)
   - /depletion, /limits redirect 301 → /countdown
+- Manual cost reminders: GET /api/costs/manual-reminders — tracks last-recorded date per manual platform, overdue >35 days
+- Weekly digest: server/tasks/weekly-digest.ts — Mondays 07:00 UTC, emails MTD spend, budget %, active alerts, manual reminders
+- Loading: SkeletonLoader component (5 variants: cards, table, countdown, chart, list) replaces spinners on all pages
 
 ## Conventions
 - All DB queries use Drizzle ORM. Raw SQL via db.execute<T>(sql`...`) for complex queries (DISTINCT ON, CTEs)

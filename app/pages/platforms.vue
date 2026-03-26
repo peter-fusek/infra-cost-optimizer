@@ -178,9 +178,7 @@ function runStatusColor(status: string): string {
       <UIcon v-else-if="apiStatusLoading === 'pending'" name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-dimmed)]" />
     </div>
 
-    <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
-      <UIcon name="i-lucide-loader-2" class="size-6 animate-spin" />
-    </div>
+    <SkeletonLoader v-if="status === 'pending'" variant="cards" :cards="6" />
 
     <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <UCard

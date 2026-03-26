@@ -9,12 +9,17 @@ const navigation = [
   { label: 'Trends', icon: 'i-lucide-trending-up', to: '/trends' },
   { label: 'Optimizations', icon: 'i-lucide-lightbulb', to: '/optimizations' },
   { label: 'Countdown', icon: 'i-lucide-timer', to: '/countdown' },
+  { label: 'Alerts', icon: 'i-lucide-bell', to: '/alerts' },
   { label: 'Analytics', icon: 'i-lucide-bar-chart-2', to: '/analytics' },
   { label: 'Status', icon: 'i-lucide-activity', to: '/status' },
   { label: 'Platforms', icon: 'i-lucide-server', to: '/platforms' },
   { label: 'Budgets', icon: 'i-lucide-wallet', to: '/budgets' },
   { label: 'Manual Entry', icon: 'i-lucide-pencil', to: '/manual' },
 ]
+
+// Pending alerts badge count
+const { data: pendingAlerts } = await useFetch<{ alerts: any[]; total: number }>('/api/alerts', { lazy: true })
+const pendingAlertCount = computed(() => pendingAlerts.value?.total ?? 0)
 
 watch(() => route.path, () => {
   mobileMenuOpen.value = false
@@ -45,6 +50,12 @@ watch(() => route.path, () => {
               >
                 <UIcon :name="item.icon" class="size-4" />
                 <span>{{ item.label }}</span>
+                <span
+                  v-if="item.to === '/alerts' && pendingAlertCount > 0"
+                  class="ml-0.5 flex size-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white"
+                >
+                  {{ pendingAlertCount > 9 ? '9+' : pendingAlertCount }}
+                </span>
               </NuxtLink>
             </nav>
           </div>
@@ -83,6 +94,12 @@ watch(() => route.path, () => {
           >
             <UIcon :name="item.icon" class="size-4" />
             <span>{{ item.label }}</span>
+            <span
+              v-if="item.to === '/alerts' && pendingAlertCount > 0"
+              class="ml-0.5 flex size-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white"
+            >
+              {{ pendingAlertCount > 9 ? '9+' : pendingAlertCount }}
+            </span>
           </NuxtLink>
         </nav>
       </div>

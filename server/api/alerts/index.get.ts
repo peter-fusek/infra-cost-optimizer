@@ -1,22 +1,46 @@
-import { and, eq, isNull, desc, gte } from 'drizzle-orm'
+import { and, eq, isNull, desc, gte, like, sql } from 'drizzle-orm'
 import { alerts, budgets } from '../../db/schema'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const db = useDB()
 
-  // Default: show alerts from current month
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  const onlyActive = query.status !== 'all'
-
   const conditions = [
     eq(alerts.isActive, true),
     isNull(alerts.deletedAt),
-    gte(alerts.createdAt, monthStart),
   ]
 
-  if (onlyActive) {
+  // Status filter: default shows only pending, ?status=all shows everything
+  const statusFilter = String(query.status || '')
+  if (statusFilter === 'all') {
+    // no status filter
+  } else if (['pending', 'sent', 'acknowledged', 'resolved'].includes(statusFilter)) {
+    conditions.push(eq(alerts.status, statusFilter as any))
+  } else {
+    // Default: pending only
     conditions.push(eq(alerts.status, 'pending'))
+  }
+
+  // Severity filter
+  const severity = String(query.severity || '')
+  if (['info', 'warning', 'critical'].includes(severity)) {
+    conditions.push(eq(alerts.severity, severity as any))
+  }
+
+  // Alert type filter (prefix match for grouped types like drift_*, anomaly_*)
+  const alertType = String(query.type || '')
+  if (alertType) {
+    conditions.push(like(alerts.alertType, `${alertType}%`))
+  }
+
+  // Date range: default current month, ?months=3 for last 3 months, ?months=all for everything
+  const months = String(query.months || '1')
+  if (months !== 'all') {
+    const monthCount = Math.min(Math.max(parseInt(months) || 1, 1), 12)
+    const since = new Date()
+    since.setMonth(since.getMonth() - monthCount + 1, 1)
+    since.setHours(0, 0, 0, 0)
+    conditions.push(gte(alerts.createdAt, since))
   }
 
   const { limit, offset } = parsePagination(query as Record<string, unknown>)
@@ -39,5 +63,12 @@ export default defineEventHandler(async (event) => {
     .limit(limit)
     .offset(offset)
 
-  return rows
+  // Include total count for pagination UI
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(alerts)
+    .leftJoin(budgets, eq(alerts.budgetId, budgets.id))
+    .where(and(...conditions))
+
+  return { alerts: rows, total: count }
 })

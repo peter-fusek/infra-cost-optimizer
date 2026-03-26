@@ -81,8 +81,29 @@ interface Alert {
   createdAt: string
 }
 
-const { data: activeAlerts, refresh: refreshAlerts } = await useFetch<Alert[]>('/api/alerts', { lazy: true })
+const { data: alertsResponse, refresh: refreshAlerts } = await useFetch<{ alerts: Alert[]; total: number }>('/api/alerts', { lazy: true })
+const activeAlerts = computed(() => alertsResponse.value?.alerts ?? [])
 const { data: collectionStatus } = await useFetch<{ lastCollectedAt: string | null }>('/api/collection-status', { lazy: true })
+
+// Analytics summary (lazy — dashboard doesn't block on it)
+interface AnalyticsSummaryProject {
+  slug: string
+  name: string
+  ga4: { sessions: number; users: number; humanSessions: number } | null
+  gsc: { clicks: number; impressions: number; seoScore: number } | null
+}
+const { data: analyticsSummary } = await useFetch<{ projects: AnalyticsSummaryProject[] }>('/api/analytics/summary', { lazy: true })
+
+const analyticsAgg = computed(() => {
+  if (!analyticsSummary.value?.projects?.length) return null
+  const projects = analyticsSummary.value.projects
+  let sessions = 0, users = 0, clicks = 0, impressions = 0, seoTotal = 0, seoCount = 0
+  for (const p of projects) {
+    if (p.ga4) { sessions += p.ga4.sessions; users += p.ga4.users }
+    if (p.gsc) { clicks += p.gsc.clicks; impressions += p.gsc.impressions; seoTotal += p.gsc.seoScore; seoCount++ }
+  }
+  return { sessions, users, clicks, impressions, avgSeo: seoCount ? Math.round(seoTotal / seoCount) : null, projectCount: projects.length }
+})
 
 const { collecting, triggerCollection } = useCollectionTrigger(async () => {
   await refresh()
@@ -390,6 +411,46 @@ const platforms = [
         </div>
       </div>
 
+      <!-- Analytics overview (lazy-loaded) -->
+      <UCard v-if="analyticsAgg">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-bold">Analytics Overview</h3>
+            <UButton to="/analytics" variant="ghost" size="xs" label="View Details" icon="i-lucide-arrow-right" trailing />
+          </div>
+        </template>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div class="text-center">
+            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Sessions</p>
+            <p class="mt-1 text-xl font-bold tabular-nums">{{ analyticsAgg.sessions.toLocaleString() }}</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Users</p>
+            <p class="mt-1 text-xl font-bold tabular-nums">{{ analyticsAgg.users.toLocaleString() }}</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Search Clicks</p>
+            <p class="mt-1 text-xl font-bold tabular-nums">{{ analyticsAgg.clicks.toLocaleString() }}</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Impressions</p>
+            <p class="mt-1 text-xl font-bold tabular-nums">{{ analyticsAgg.impressions.toLocaleString() }}</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Avg SEO</p>
+            <p
+              class="mt-1 text-xl font-bold tabular-nums"
+              :class="analyticsAgg.avgSeo !== null ? (analyticsAgg.avgSeo >= 75 ? 'text-[var(--ui-success)]' : analyticsAgg.avgSeo >= 50 ? 'text-[var(--ui-warning)]' : 'text-[var(--ui-error)]') : ''"
+            >
+              {{ analyticsAgg.avgSeo ?? '—' }}
+            </p>
+          </div>
+        </div>
+        <p class="mt-3 text-xs text-[var(--ui-text-dimmed)] text-center">
+          30-day totals across {{ analyticsAgg.projectCount }} project{{ analyticsAgg.projectCount !== 1 ? 's' : '' }}
+        </p>
+      </UCard>
+
       <!-- Platform breakdown -->
       <UCard>
         <template #header>
@@ -399,9 +460,7 @@ const platforms = [
           </div>
         </template>
 
-        <div v-if="status === 'pending'" class="flex justify-center py-8" role="status" aria-label="Loading">
-          <UIcon name="i-lucide-loader-2" class="size-6 animate-spin text-emerald-500" />
-        </div>
+        <SkeletonLoader v-if="status === 'pending'" variant="table" :rows="6" />
 
         <div v-else-if="!mtd?.byPlatform?.length" class="py-12 text-center">
           <UIcon name="i-lucide-database" class="mx-auto size-8 text-[var(--ui-text-dimmed)]" />

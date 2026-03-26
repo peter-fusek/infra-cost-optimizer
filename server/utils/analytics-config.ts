@@ -26,7 +26,7 @@ export const ANALYTICS_CONFIG: ProjectAnalyticsConfig[] = [
   { slug: 'budgetco', ga4PropertyId: '529309393', gscSiteUrl: 'sc-domain:budgetco.eu' },
   { slug: 'pulseshape', ga4PropertyId: '494047490', gscSiteUrl: 'sc-domain:pulseshape.com' },
   { slug: 'instarea', ga4PropertyId: null, gscSiteUrl: 'sc-domain:instarea.com' },
-  { slug: 'scrabsnap', ga4PropertyId: '529720507', gscSiteUrl: null },
+  { slug: 'scrabsnap', ga4PropertyId: null, gscSiteUrl: null }, // TODO: add correct GA4 Property ID (was '529720507' — duplicate of oncofiles)
   // robota removed — project no longer exists
 ]
 
