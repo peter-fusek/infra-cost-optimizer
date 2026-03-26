@@ -21,12 +21,12 @@ export const ANALYTICS_CONFIG: ProjectAnalyticsConfig[] = [
   { slug: 'infracost', ga4PropertyId: '529880367', gscSiteUrl: 'https://infracost.eu' },
   { slug: 'homegrif.com', ga4PropertyId: '516113889', gscSiteUrl: 'https://homegrif.com' },
   { slug: 'oncoteam', ga4PropertyId: '529091873', gscSiteUrl: 'https://oncoteam.cloud' },
-  { slug: 'oncofiles', ga4PropertyId: '529720507', gscSiteUrl: 'https://oncofiles.com' },
+  { slug: 'oncofiles', ga4PropertyId: '529785236', gscSiteUrl: 'https://oncofiles.com' },
   { slug: 'contacts-refiner', ga4PropertyId: '529886218', gscSiteUrl: 'sc-domain:contactrefiner.com' },
   { slug: 'budgetco', ga4PropertyId: '529309393', gscSiteUrl: 'sc-domain:budgetco.eu' },
   { slug: 'pulseshape', ga4PropertyId: '494047490', gscSiteUrl: 'sc-domain:pulseshape.com' },
   { slug: 'instarea', ga4PropertyId: null, gscSiteUrl: 'sc-domain:instarea.com' },
-  { slug: 'scrabsnap', ga4PropertyId: null, gscSiteUrl: null }, // TODO: add correct GA4 Property ID (was '529720507' — duplicate of oncofiles)
+  { slug: 'scrabsnap', ga4PropertyId: '529720507', gscSiteUrl: null },
   // robota removed — project no longer exists
 ]
 
