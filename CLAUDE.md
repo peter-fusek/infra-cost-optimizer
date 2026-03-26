@@ -40,6 +40,9 @@
 - Manual cost reminders: GET /api/costs/manual-reminders — tracks last-recorded date per manual platform, overdue >35 days
 - Weekly digest: server/tasks/weekly-digest.ts — Mondays 07:00 UTC, emails MTD spend, budget %, active alerts, manual reminders
 - Loading: SkeletonLoader component (5 variants: cards, table, countdown, chart, list) replaces spinners on all pages
+- Bulk alerts: PATCH /api/alerts/bulk — batch resolve/acknowledge up to 200 alerts, UI checkboxes + toolbar on /alerts
+- Drift detection: 7-day dedup window, DRIFT_IGNORE_LIST for known-expected drifts (28 entries), dedup checks all statuses
+- Anomaly detection: MIN_HISTORICAL_MONTHS = 2 guard, 7-day dedup, threshold tuning deferred to Sprint 28 (June 2026)
 
 ## Conventions
 - All DB queries use Drizzle ORM. Raw SQL via db.execute<T>(sql`...`) for complex queries (DISTINCT ON, CTEs)
