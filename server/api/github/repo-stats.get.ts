@@ -1,4 +1,4 @@
-const REPO = 'peter-fusek/infra-cost-optimizer'
+const REPO = 'peter-fusek/infracost'
 
 async function fetchJson<T>(url: string, headers: Record<string, string>): Promise<T> {
   return $fetch<T>(url, {

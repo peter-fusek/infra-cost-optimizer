@@ -1,6 +1,6 @@
 import { buildBugIssueBody, type BugContext } from '../utils/bug-report-markdown'
 
-const REPO = 'peter-fusek/infra-cost-optimizer'
+const REPO = 'peter-fusek/infracost'
 
 interface BugReportBody {
   description: string

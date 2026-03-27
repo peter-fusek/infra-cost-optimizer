@@ -218,7 +218,7 @@ const platforms = [
             @click="triggerCollection"
           />
           <UButton
-            to="https://github.com/peter-fusek/infra-cost-optimizer"
+            to="https://github.com/peter-fusek/infracost"
             external
             variant="outline"
             icon="i-lucide-github"

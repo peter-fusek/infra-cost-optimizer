@@ -40,4 +40,4 @@ https://infracost.eu
 
 ## Source
 
-https://github.com/peter-fusek/infra-cost-optimizer
+https://github.com/peter-fusek/infracost

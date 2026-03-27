@@ -125,7 +125,7 @@ export const budgetSeed = [
 
 // Project registry — all personal projects with tech stack and URLs
 export const projectSeed = [
-  { slug: 'infracost', name: 'InfraCost', description: 'Infrastructure cost tracking dashboard', repoUrl: 'https://github.com/peter-fusek/infra-cost-optimizer', productionUrl: 'https://infracost.eu', techStack: ['nuxt', 'typescript', 'tailwind', 'drizzle', 'postgres', 'render'], status: 'active' as const },
+  { slug: 'infracost', name: 'InfraCost', description: 'Infrastructure cost tracking dashboard', repoUrl: 'https://github.com/peter-fusek/infracost', productionUrl: 'https://infracost.eu', techStack: ['nuxt', 'typescript', 'tailwind', 'drizzle', 'postgres', 'render'], status: 'active' as const },
   { slug: 'homegrif.com', name: 'HomeGrif.com', description: 'Real estate partner platform (CZ + SK)', repoUrl: 'https://github.com/instarea-sk/homegrif_com', productionUrl: 'https://homegrif.com', techStack: ['nuxt', 'typescript', 'tailwind', 'postgres', 'render'], status: 'active' as const },
   { slug: 'oncoteam', name: 'Oncoteam', description: 'Oncology treatment management dashboard', repoUrl: 'https://github.com/instarea-sk/oncoteam', productionUrl: 'https://dashboard.oncoteam.cloud', techStack: ['nuxt', 'typescript', 'fastapi', 'python', 'postgres', 'railway'], status: 'active' as const },
   { slug: 'oncofiles', name: 'Oncofiles', description: 'Medical document management with AI', repoUrl: 'https://github.com/peter-fusek/oncofiles', productionUrl: 'https://oncofiles.com', techStack: ['nuxt', 'typescript', 'turso', 'railway'], status: 'active' as const },

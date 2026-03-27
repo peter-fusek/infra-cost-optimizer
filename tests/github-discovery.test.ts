@@ -43,7 +43,7 @@ describe('discoverGitHubRepos', () => {
     mockFetch.mockImplementation((url: string) => {
       if (url.includes('/users/peter-fusek/repos')) {
         return mockResponse([
-          makeRepo({ name: 'infra-cost-optimizer', full_name: 'peter-fusek/infra-cost-optimizer', html_url: 'https://github.com/peter-fusek/infra-cost-optimizer' }),
+          makeRepo({ name: 'infracost', full_name: 'peter-fusek/infracost', html_url: 'https://github.com/peter-fusek/infracost' }),
           makeRepo({ name: 'new-project', full_name: 'peter-fusek/new-project', html_url: 'https://github.com/peter-fusek/new-project' }),
         ])
       }
@@ -63,7 +63,7 @@ describe('discoverGitHubRepos', () => {
     })
 
     const result = await discoverGitHubRepos('fake-token', [
-      'https://github.com/peter-fusek/infra-cost-optimizer',
+      'https://github.com/peter-fusek/infracost',
       'https://github.com/instarea-sk/oncoteam',
     ])
 

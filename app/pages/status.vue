@@ -425,11 +425,11 @@ const pausedProjects = computed(() => projectsData.value?.projects?.filter(p => 
               <div class="flex items-center gap-2">
                 <UIcon name="i-lucide-github" class="size-5" />
                 <a
-                  href="https://github.com/peter-fusek/infra-cost-optimizer"
+                  href="https://github.com/peter-fusek/infracost"
                   target="_blank"
                   class="font-medium hover:underline"
                 >
-                  peter-fusek/infra-cost-optimizer
+                  peter-fusek/infracost
                 </a>
                 <UBadge v-if="repoStats.language" variant="subtle" color="neutral" size="xs">
                   {{ repoStats.language }}

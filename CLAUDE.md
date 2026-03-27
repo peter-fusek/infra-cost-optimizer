@@ -1,4 +1,4 @@
-# InfraCost — Infrastructure Cost Optimizer
+# InfraCost — infracost.eu
 
 ## Build & Dev
 - `pnpm build` — production build (Nitro + Nuxt)
