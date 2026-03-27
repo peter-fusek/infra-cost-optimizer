@@ -12,19 +12,19 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.5.1",
+    "@nuxt/ui": "^4.6.0",
     "drizzle-orm": "^0.45.1",
     "google-auth-library": "^10.6.2",
     "nuxt": "^4.4.2",
     "nuxt-auth-utils": "^0.5.29",
     "pg": "^8.20.0",
-    "tailwindcss": "^4.2.1",
-    "vue": "^3.5.30"
+    "tailwindcss": "^4.2.2",
+    "vue": "^3.5.31"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "drizzle-kit": "^0.31.10",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.2"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -37,7 +37,11 @@
       "serialize-javascript": ">=7.0.3",
       "esbuild": ">=0.25.0",
       "h3": ">=1.15.9",
-      "yaml": ">=2.8.3"
+      "yaml": ">=2.8.3",
+      "picomatch": ">=4.0.4",
+      "node-forge": ">=1.4.0",
+      "srvx": ">=0.11.13",
+      "brace-expansion": ">=5.0.5"
     }
   }
 }
