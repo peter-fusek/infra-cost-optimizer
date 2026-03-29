@@ -64,7 +64,7 @@ export const serviceSeed = [
 
   // Claude Max — one personal account (corrected 2026-03-24, was incorrectly showing two accounts)
   { platformSlug: 'claude-max', name: 'Max Subscription (personal)', project: 'personal', serviceType: 'subscription', monthlyCostEstimate: '196.00' },
-  { platformSlug: 'claude-max', name: 'Extra Usage (personal)', project: 'personal', serviceType: 'usage', monthlyCostEstimate: '29.00' },
+  { platformSlug: 'claude-max', name: 'Extra Usage (personal)', project: 'personal', serviceType: 'usage', monthlyCostEstimate: '50.00' }, // varies $29-$162/mo depending on sprint intensity
 
   // Neon (free tier)
   { platformSlug: 'neon', name: 'homegrif-neon', project: 'homegrif.com', serviceType: 'database', monthlyCostEstimate: '0.00' },
