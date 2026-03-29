@@ -12,7 +12,7 @@
 - DB: Railway PostgreSQL (migrated from Render 2026-03-25). Schema at server/db/schema.ts
 - Collectors: server/collectors/*.ts — each returns CollectorResult { records, errors, accountIdentifier? }
 - Collect task: server/tasks/collect.ts — daily cron at 06:00 UTC + manual trigger via POST /api/collect/trigger (2min rate limit, concurrent run guard)
-- Auth: nuxt-auth-utils + Google OAuth. Middleware at server/middleware/auth.ts protects POST/PATCH/DELETE (except /api/bugs)
+- Auth: nuxt-auth-utils + Google OAuth. Middleware at server/middleware/auth.ts protects all POST/PATCH/DELETE
 - Bug reporter: app/components/BugReportButton.vue + app/composables/useBugReport.ts → server/api/bugs.post.ts (needs GITHUB_TOKEN env var)
   - Screenshot: user paste (Ctrl+V) or file upload only — NEVER auto-capture DOM content
   - No DOM-scraping libraries (html2canvas etc.) — injection surface
