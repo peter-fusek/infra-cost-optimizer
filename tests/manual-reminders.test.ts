@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest'
-
-// Test pure logic from manual-reminders.get.ts
-
-const MANUAL_PLATFORM_CONFIG: Record<string, { expectedAmount: number; costType: string; serviceName: string }> = {
-  'claude-max': { expectedAmount: 246, costType: 'subscription', serviceName: 'Max Subscription + Extra Usage' },
-  'google-services': { expectedAmount: 62.50, costType: 'subscription', serviceName: 'Google Workspace Business Standard (5 seats)' },
-  'websupport': { expectedAmount: 0.58, costType: 'subscription', serviceName: 'Domain (infracost.eu)' },
-}
+import { MANUAL_PLATFORM_CONFIG } from '../server/utils/manual-platforms'
 
 function computeDaysSince(lastDate: string | null, now: Date): number | null {
   if (!lastDate) return null

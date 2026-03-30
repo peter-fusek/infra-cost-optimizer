@@ -2,13 +2,7 @@ import { and, eq, isNull, desc, gte, lte, sql } from 'drizzle-orm'
 import { alerts, costRecords, platforms } from '../db/schema'
 import { getMTDSummary } from './cost-aggregation'
 import { sendAlertEmail } from '../utils/notifications'
-
-/** Expected monthly amounts for manual platforms — must match manual-reminders.get.ts */
-const MANUAL_EXPECTED: Record<string, number> = {
-  'claude-max': 246,
-  'google-services': 62.50,
-  'websupport': 0.58,
-}
+import { MANUAL_PLATFORM_CONFIG } from '../utils/manual-platforms'
 
 /**
  * Compose and send a weekly cost digest email.
@@ -99,7 +93,7 @@ export async function sendWeeklyDigest(db: ReturnType<typeof useDB>, config: Rec
   // Cost variance alerts — flag manual platforms where recorded amount deviates >20% from expected
   const costVariances: string[] = []
   for (const p of manualPlatforms) {
-    const expected = MANUAL_EXPECTED[p.slug]
+    const expected = MANUAL_PLATFORM_CONFIG[p.slug]?.expectedAmount
     if (!expected) continue
     const monthRecords = await db
       .select({ total: sql<number>`COALESCE(SUM(${costRecords.amount}), 0)` })
