@@ -36,9 +36,10 @@ export default defineEventHandler(async (event) => {
 
     Promise.resolve(computeExpiryStatuses()),
 
-    $fetch('/api/depletion').catch(() => ({ platforms: [] })),
-    $fetch('/api/limits').catch(() => ({ platforms: [] })),
-    $fetch('/api/costs/manual-reminders').catch(() => ({ reminders: [] })),
+    // Use event.$fetch for Nitro-internal calls (avoids relative URL issues in production)
+    event.$fetch('/api/depletion').catch(() => ({ platforms: [] })),
+    event.$fetch('/api/limits').catch(() => ({ platforms: [] })),
+    event.$fetch('/api/costs/manual-reminders').catch(() => ({ reminders: [] })),
 
     // Drift is the slowest — calls 3 external APIs
     (async () => {

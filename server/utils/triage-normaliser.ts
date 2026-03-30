@@ -22,7 +22,8 @@ export interface TriageItem {
   driftKey?: string
 }
 
-const URGENCY_SCORES: Record<string, number> = {
+/** Must stay in sync with app/utils/risk.ts URGENCY_SCORES */
+export const URGENCY_SCORES: Record<string, number> = {
   depleted: 0, expired: 0, exceeded: 1,
   critical: 2, warning: 3, ok: 4, unknown: 5,
 }

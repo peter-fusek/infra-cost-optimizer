@@ -109,7 +109,8 @@ const loading = computed(() => depletionStatus.value === 'pending' || limitsStat
 
 // Risk to urgency score (lower = more urgent)
 function riskToUrgency(risk: string): number {
-  const scores: Record<string, number> = { depleted: 0, expired: 0, exceeded: 1, critical: 2, warning: 3, ok: 4, unknown: 5 }
+  // Uses URGENCY_SCORES from app/utils/risk.ts (auto-imported)
+  const scores = URGENCY_SCORES
   return scores[risk] ?? 5
 }
 
