@@ -1,17 +1,17 @@
 # InfraCost
 
-> Infrastructure cost tracking dashboard for cloud and AI platforms
+> You ship fast. Infrastructure debt accumulates faster.
 
-InfraCost is a self-hosted web application that tracks and optimizes infrastructure spending across 12 cloud and AI platforms. It provides automated cost collection, budget alerts, anomaly detection, drift detection, domain/SSL expiry tracking, and project analytics — all in a single dashboard.
+InfraCost is a self-hosted dashboard that tracks infrastructure spending across 12 cloud and AI platforms. Built for vibecoders and indie builders who accumulate services faster than they track them — Render, Railway, Neon, Turso, Claude Max, Resend and more pile up while free tiers expire silently and budgets drift. InfraCost pulls live costs every morning, alerts before overspending, and counts down every free tier, credit, domain renewal and SSL expiry in one urgency-sorted view.
 
 ## Key Features
 
-- **12-Platform Tracking**: API collectors for Render, Railway, Anthropic, Claude Max, Neon, Turso, Resend, UptimeRobot, GCP, GitHub, Google Services, Websupport
-- **Budget & Anomaly Alerts**: Threshold alerts (50-100%) + anomaly detection for spending spikes. Email and WhatsApp notifications.
-- **Countdown Dashboard**: Credits, plan limits, domain renewals, SSL expirations, and free tier deadlines — urgency-sorted with risk badges
-- **Drift Detection**: Compares live API service inventories against tracked records daily. Auto-discovers untracked GitHub repos.
+- **All 12 Platforms in One Pull**: API collectors for Render, Railway, Anthropic, Claude Max, Neon, Turso, Resend, UptimeRobot, GCP, GitHub, Google Services, Websupport
+- **Alerts Before the Spike Hits**: Threshold alerts (50-100%) + anomaly detection for spending spikes. Email and WhatsApp notifications.
+- **Free Tier Expiry Countdown**: Credits, plan limits, domain renewals, SSL expirations, and free tier deadlines — urgency-sorted with risk badges
+- **Drift Detection + GitHub Discovery**: Compares live API service inventories against tracked records daily. Auto-discovers untracked GitHub repos with deployment indicators.
 - **Project Analytics**: GA4 traffic + Google Search Console performance per project with SEO scoring
-- **Expiry Tracking**: 21 domain/hosting/SSL renewals tracked with countdown timers
+- **Domain and SSL Renewals**: 21 domain/hosting/SSL renewals tracked with countdown timers
 - **Weekly Digest**: Automated Monday email with MTD spend, budget %, active alerts, manual reminders
 - **Autonomous Health Checks**: Weekly scheduled agent audits project registry against GitHub repos
 - **Dual Currency**: All amounts shown in both USD and EUR
@@ -26,7 +26,7 @@ InfraCost is a self-hosted web application that tracks and optimizes infrastruct
 
 ## Pages
 
-- `/` — Landing page + authenticated dashboard overview
+- `/` — Problem-first landing page + authenticated cost dashboard
 - `/breakdown` — Per-service cost breakdown (by platform or by project)
 - `/trends` — Monthly cost trends with MoM comparison
 - `/optimizations` — Cost optimization suggestions

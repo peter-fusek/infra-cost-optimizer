@@ -1,14 +1,14 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'InfraCost — Track All Your Infrastructure Costs in One Dashboard',
-  ogTitle: 'InfraCost — Track All Your Infrastructure Costs in One Dashboard',
-  description: 'Track spending across 12 cloud and AI platforms — Render, Railway, Anthropic, Claude Max, Neon, Turso, and more — with budget alerts, drift detection, depletion forecasts, GitHub auto-discovery, and CSV export. USD + EUR.',
-  ogDescription: 'Automated cost tracking across 12 platforms including Render, Railway, Anthropic, Claude Max, GCP. Budget alerts, drift detection, depletion forecasts, anomaly detection, GitHub auto-discovery. Secured with Google OAuth.',
+  title: 'InfraCost — Stop Flying Blind on Infra Costs | Render, Railway, Neon, Turso & More',
+  ogTitle: 'InfraCost — Stop Flying Blind on Infra Costs | Render, Railway, Neon, Turso & More',
+  description: 'You ship fast and infra piles up. InfraCost tracks all 12 platforms — Render, Railway, Neon, Turso, Claude Max — alerts before overspend, counts down every free tier.',
+  ogDescription: 'Vibecoding spawns infra debt fast. InfraCost tracks 12 platforms automatically — Render, Railway, Anthropic, GCP, Claude Max and more. Budget alerts, free-tier expiry countdowns, drift detection, anomaly spikes, GitHub auto-discovery. USD + EUR.',
   ogType: 'website',
   ogSiteName: 'InfraCost',
   ogUrl: 'https://infracost.eu',
   ogImage: 'https://infracost.eu/og-image.png',
-  ogImageAlt: 'InfraCost — infrastructure cost tracking dashboard',
+  ogImageAlt: 'InfraCost — infrastructure cost dashboard for vibecoders and indie builders',
   twitterCard: 'summary_large_image',
   twitterImage: 'https://infracost.eu/og-image.png',
 })
@@ -25,7 +25,7 @@ useHead({
         url: 'https://infracost.eu',
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'Web',
-        description: 'Infrastructure cost tracking dashboard for 12 cloud and AI platforms with automated collectors, budget alerts, drift detection, depletion forecasts, and anomaly detection.',
+        description: 'Self-hosted dashboard that tracks infrastructure spending across 12 cloud and AI platforms. Built for vibecoders and indie builders who accumulate infra debt fast — budget alerts, free-tier expiry countdowns, drift detection, anomaly detection, and GitHub auto-discovery.',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       }),
     },
@@ -138,33 +138,33 @@ const budgetColor = computed(() => {
 const features = [
   {
     icon: 'i-lucide-radio-tower',
-    title: '12 Platforms, 1 View',
-    description: 'API collectors pull live costs from Render, Railway, Anthropic, Claude Max, Neon, Turso, Resend, UptimeRobot, GCP, GitHub, Google Services, and Websupport.',
+    title: 'One Place for All 12 Platforms',
+    description: 'Stop logging into Render, Railway, Neon, Turso, Resend, and GCP separately to piece together what you spent. API collectors pull live costs every morning and land them in a single table.',
   },
   {
     icon: 'i-lucide-bell-ring',
-    title: 'Budget & Anomaly Alerts',
-    description: 'Threshold alerts at 50-100% of budget plus anomaly detection for unusual spending spikes. Email and WhatsApp notifications.',
+    title: 'Know Before the Spike Hits Your Card',
+    description: 'Budget threshold alerts at 50-100% plus anomaly detection when spending jumps outside your normal baseline. Notifications via email and WhatsApp so nothing slips through while you\'re heads-down shipping.',
   },
   {
     icon: 'i-lucide-battery-warning',
-    title: 'Countdown Dashboard',
-    description: 'Credits, plan limits, domain renewals, SSL expirations, and free tier deadlines — all urgency-sorted in one view with risk-colored badges.',
+    title: 'Free Tiers Don\'t Expire Quietly Anymore',
+    description: 'Credits running low, plan limits approaching, domain renewals due, free tier deadlines looming — all urgency-sorted in one countdown view with risk-colored badges. No more surprise suspension emails.',
   },
   {
     icon: 'i-lucide-git-compare',
-    title: 'Drift Detection + GitHub Discovery',
-    description: 'Daily scans compare live services against your registry. Auto-discover untracked GitHub repos with deployment indicators. Change history timeline per project.',
+    title: 'Catch Infrastructure That Grew While You Weren\'t Looking',
+    description: 'Daily scans compare live API service inventories against your tracked registry. GitHub auto-discovery flags repos with deployment indicators you never registered. Change history timeline shows exactly when things shifted.',
   },
   {
     icon: 'i-lucide-download',
-    title: 'Sort, Filter & Export',
-    description: 'Breakdown by platform or project with sorting, filtering, and search. CSV exports for offline analysis. Per-platform month-over-month trends.',
+    title: 'Drill Down, Then Get Out of the Way',
+    description: 'Break costs down by platform or project. Sort by spend, filter by type, search services. Export to CSV for your accountant or your spreadsheet. Month-over-month trends per platform so you see what\'s creeping.',
   },
   {
     icon: 'i-lucide-shield-check',
-    title: 'Resilient & Secure',
-    description: 'Google OAuth with email allowlist. 183 tests. Weekly autonomous health checks. Collector retry with exponential backoff. 15s API timeouts. All data in USD and EUR.',
+    title: 'Built to Run Unattended',
+    description: 'Google OAuth with email allowlist. 183 automated tests. Weekly autonomous health checks. Collector retry with exponential backoff. 15s API timeouts. All amounts in both USD and EUR.',
   },
 ]
 
@@ -191,14 +191,14 @@ const platforms = [
       <div class="absolute inset-0 hero-grid" />
       <div class="relative mx-auto max-w-3xl text-center">
         <div class="animate-fade-in-up" style="animation-delay: 0ms">
-          <p class="mb-4 text-sm font-semibold uppercase tracking-widest text-emerald-500">Infrastructure Cost Intelligence</p>
+          <p class="mb-4 text-sm font-semibold uppercase tracking-widest text-emerald-500">Infra Debt Is Real. So Is The Bill.</p>
           <h1 class="font-display text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
-            Every dollar your infrastructure spends.
-            <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">One dashboard.</span>
+            You shipped fast. Now you're paying
+            <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">twelve platforms you forgot about.</span>
           </h1>
         </div>
         <p class="animate-fade-in-up mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[var(--ui-text-muted)]" style="animation-delay: 100ms">
-          Automated cost tracking across 12 platforms. Budget alerts before you overspend. Drift detection when infrastructure changes. GitHub auto-discovery for untracked projects. CSV exports. USD and EUR.
+          Render, Railway, Neon, Turso, Claude Max, Resend — every side project adds another line item. Free trials expire silently. Manual invoices go untracked. InfraCost pulls live costs from all 12 platforms, fires alerts before you overspend, and counts down every free tier, credit, and domain renewal you're about to miss.
         </p>
         <div class="animate-fade-in-up mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center" style="animation-delay: 200ms">
           <UButton
@@ -254,7 +254,7 @@ const platforms = [
 
     <!-- Tracked Platforms -->
     <section class="text-center animate-fade-in-up" style="animation-delay: 700ms">
-      <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-[var(--ui-text-dimmed)]">Tracking costs across</h2>
+      <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-[var(--ui-text-dimmed)]">Pulling live costs from</h2>
       <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
         <UBadge
           v-for="p in platforms"
