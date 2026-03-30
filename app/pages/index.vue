@@ -93,6 +93,7 @@ interface AnalyticsSummaryProject {
   gsc: { clicks: number; impressions: number; seoScore: number } | null
 }
 const { data: analyticsSummary } = await useFetch<{ projects: AnalyticsSummaryProject[] }>('/api/analytics/summary', { lazy: true })
+const { data: triageSummary } = await useFetch<{ redCount: number; yellowCount: number; totalCount: number }>('/api/triage/summary', { lazy: true })
 
 const analyticsAgg = computed(() => {
   if (!analyticsSummary.value?.projects?.length) return null
@@ -337,15 +338,20 @@ const platforms = [
           </div>
         </UCard>
 
-        <UCard class="metric-card-platforms">
+        <UCard class="metric-card-triage">
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Platforms Tracked</p>
-              <p class="mt-1.5 text-2xl font-bold tabular-nums">{{ mtd?.byPlatform?.length || 0 }}</p>
-              <p class="mt-0.5 text-sm text-[var(--ui-text-dimmed)]">{{ mtd?.monthProgress ?? 0 }}% through month</p>
+              <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ui-text-muted)]">Needs Attention</p>
+              <div class="mt-1.5 flex items-baseline gap-2">
+                <span v-if="triageSummary?.redCount" class="text-2xl font-bold tabular-nums text-red-500">{{ triageSummary.redCount }}</span>
+                <span v-if="triageSummary?.redCount && triageSummary?.yellowCount" class="text-[var(--ui-text-dimmed)]">/</span>
+                <span v-if="triageSummary?.yellowCount" class="text-2xl font-bold tabular-nums text-amber-500">{{ triageSummary.yellowCount }}</span>
+                <span v-if="!triageSummary?.totalCount" class="text-2xl font-bold tabular-nums text-emerald-500">0</span>
+              </div>
+              <NuxtLink to="/triage" class="mt-0.5 text-sm text-emerald-500 hover:underline">Review &rarr;</NuxtLink>
             </div>
-            <div class="flex size-9 items-center justify-center rounded-lg bg-violet-500/10">
-              <UIcon name="i-lucide-server" class="size-4 text-violet-500" />
+            <div class="flex size-9 items-center justify-center rounded-lg" :class="triageSummary?.redCount ? 'bg-red-500/10' : 'bg-violet-500/10'">
+              <UIcon name="i-lucide-clipboard-list" class="size-4" :class="triageSummary?.redCount ? 'text-red-500' : 'text-violet-500'" />
             </div>
           </div>
         </UCard>

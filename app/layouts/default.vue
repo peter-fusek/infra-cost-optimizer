@@ -9,6 +9,7 @@ const navigation = [
   { label: 'Trends', icon: 'i-lucide-trending-up', to: '/trends' },
   { label: 'Optimizations', icon: 'i-lucide-lightbulb', to: '/optimizations' },
   { label: 'Countdown', icon: 'i-lucide-timer', to: '/countdown' },
+  { label: 'Triage', icon: 'i-lucide-clipboard-list', to: '/triage' },
   { label: 'Alerts', icon: 'i-lucide-bell', to: '/alerts' },
   { label: 'Analytics', icon: 'i-lucide-bar-chart-2', to: '/analytics' },
   { label: 'Status', icon: 'i-lucide-activity', to: '/status' },
@@ -20,6 +21,10 @@ const navigation = [
 // Pending alerts badge count
 const { data: pendingAlerts } = await useFetch<{ alerts: any[]; total: number }>('/api/alerts', { query: { status: 'pending' }, lazy: true })
 const pendingAlertCount = computed(() => pendingAlerts.value?.total ?? 0)
+
+// Triage badge count
+const { data: triageSummary } = await useFetch<{ totalCount: number; redCount: number }>('/api/triage/summary', { lazy: true })
+const triageCount = computed(() => triageSummary.value?.totalCount ?? 0)
 
 watch(() => route.path, () => {
   mobileMenuOpen.value = false
@@ -55,6 +60,12 @@ watch(() => route.path, () => {
                   class="ml-0.5 flex size-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white"
                 >
                   {{ pendingAlertCount > 9 ? '9+' : pendingAlertCount }}
+                </span>
+                <span
+                  v-if="item.to === '/triage' && triageCount > 0"
+                  class="ml-0.5 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white"
+                >
+                  {{ triageCount > 9 ? '9+' : triageCount }}
                 </span>
               </NuxtLink>
             </nav>

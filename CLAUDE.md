@@ -31,14 +31,15 @@
   - API: GET /api/analytics/traffic, /api/analytics/search, /api/analytics/summary
   - SEO scoring: 0-100 based on CTR, position, impressions, click volume, trend direction
   - LLMEO tips: structured data, content recommendations for AI crawler visibility
-- Pages: 11 total (/, /breakdown, /trends, /optimizations, /countdown, /alerts, /analytics, /status, /platforms, /budgets, /manual)
+- Pages: 12 total (/, /breakdown, /trends, /optimizations, /countdown, /triage, /alerts, /analytics, /status, /platforms, /budgets, /manual)
   - /countdown = merged Depletion + Limits + Free Tier Expiry — urgency-sorted + Monthly Tasks (manual platform reminders)
   - /alerts = filterable alert history (severity, status, type, date range) with acknowledge/resolve actions
   - /status = UptimeRobot monitors + Projects grid (expandable with change timeline) + Drift alerts + GitHub Discovery (auth-gated)
   - Project cards: clickable expand with change history, yellow ring for "recently changed" (7 days)
+  - /triage = unified "Needs Attention" view — aggregates yellows/reds from alerts, countdown, drift, manual reminders with action buttons
   - /depletion, /limits redirect 301 → /countdown
 - Manual cost reminders: GET /api/costs/manual-reminders — tracks last-recorded date per manual platform, overdue >35 days
-- Weekly digest: server/tasks/weekly-digest.ts — Mondays 07:00 UTC, emails MTD spend, budget %, active alerts, manual reminders, cost variance alerts (>20% deviation)
+- Weekly digest: server/tasks/weekly-digest.ts — Mondays 07:00 UTC, emails MTD spend, budget %, active alerts, manual reminders, cost variance alerts (>20% deviation), triage counts with CTA
 - Loading: SkeletonLoader component (5 variants: cards, table, countdown, chart, list) replaces spinners on all pages
 - Bulk alerts: PATCH /api/alerts/bulk — batch resolve/acknowledge up to 200 alerts, UI checkboxes + toolbar on /alerts
 - Drift detection: 7-day dedup window, DRIFT_IGNORE_LIST for known-expected drifts (28 entries), dedup checks all statuses
@@ -51,6 +52,9 @@
 - Plan limits: server/utils/plan-limits.ts (PLAN_LIMITS, extractUsage, formatUsage, formatLimit)
 - EUR conversion: server/utils/currency.ts (EUR_USD_RATE, toEur) — update monthly
 - Manual platform config: server/utils/manual-platforms.ts (MANUAL_PLATFORM_CONFIG — single source of truth for expected amounts)
+- Triage normaliser: server/utils/triage-normaliser.ts (TriageItem type, normalise*() pure functions, PLATFORM_ACTION_URLS)
+- Risk utilities: app/utils/risk.ts (RISK_COLORS, RISK_ICONS, BAR_COLORS, RISK_TEXT_CLASSES — shared by countdown + triage)
+- Triage review tracking: app/composables/useTriageReviews.ts (localStorage, 7-day auto-reset)
 - Bug issue markdown: server/utils/bug-report-markdown.ts (buildBugIssueBody, BugContext type)
 - Collection trigger: app/composables/useCollectionTrigger.ts — shared composable for all refresh buttons
 - CSV export: app/composables/useCsvExport.ts — client-side CSV generation + download

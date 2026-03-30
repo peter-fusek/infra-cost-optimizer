@@ -3,6 +3,7 @@ import { alerts, costRecords, platforms } from '../db/schema'
 import { getMTDSummary } from './cost-aggregation'
 import { sendAlertEmail } from '../utils/notifications'
 import { MANUAL_PLATFORM_CONFIG } from '../utils/manual-platforms'
+import { computeExpiryStatuses } from '../utils/free-tier-expiry'
 
 /**
  * Compose and send a weekly cost digest email.
@@ -114,6 +115,22 @@ export async function sendWeeklyDigest(db: ReturnType<typeof useDB>, config: Rec
   if (costVariances.length) {
     lines.push('Cost Variance Alerts (>20% deviation):')
     lines.push(...costVariances)
+    lines.push('')
+  }
+
+  // Triage summary — count items needing attention
+  let triageRed = 0
+  let triageYellow = 0
+  for (const a of pendingAlerts) {
+    if (a.severity === 'critical') triageRed++
+    else if (a.severity === 'warning') triageYellow++
+  }
+  for (const e of computeExpiryStatuses()) {
+    if (e.risk === 'expired' || e.risk === 'critical') triageRed++
+    else if (e.risk === 'warning') triageYellow++
+  }
+  if (triageRed + triageYellow > 0) {
+    lines.push(`Needs Attention: ${triageRed} red, ${triageYellow} yellow → https://infracost.eu/triage`)
     lines.push('')
   }
 

@@ -148,32 +148,7 @@ const lastChecked = computed(() => {
   return dates.length ? new Date(Math.max(...dates.map(d => new Date(d!).getTime()))).toLocaleString() : null
 })
 
-const RISK_COLORS: Record<string, string> = {
-  depleted: 'error', expired: 'error', exceeded: 'error', critical: 'error',
-  warning: 'warning', ok: 'success',
-}
-function riskColor(level: string): string { return RISK_COLORS[level] ?? 'neutral' }
-
-const RISK_ICONS: Record<string, string> = {
-  depleted: 'i-lucide-x-circle', expired: 'i-lucide-x-circle', exceeded: 'i-lucide-x-circle',
-  critical: 'i-lucide-alert-triangle', warning: 'i-lucide-alert-circle',
-  ok: 'i-lucide-check-circle',
-}
-function riskIcon(level: string): string { return RISK_ICONS[level] ?? 'i-lucide-circle-dashed' }
-
-const BAR_COLORS: Record<string, string> = {
-  depleted: 'bg-[var(--ui-error)]', exceeded: 'bg-[var(--ui-error)]', critical: 'bg-[var(--ui-error)]',
-  warning: 'bg-[var(--ui-warning)]', ok: 'bg-[var(--ui-success)]',
-}
-function barColor(level: string): string { return BAR_COLORS[level] ?? 'bg-[var(--ui-text-dimmed)]' }
-
-const RISK_TEXT_CLASSES: Record<string, string> = {
-  ok: 'text-[var(--ui-success)]', warning: 'text-[var(--ui-warning)]',
-  critical: 'text-[var(--ui-error)]', depleted: 'text-[var(--ui-error)]',
-  expired: 'text-[var(--ui-error)]', exceeded: 'text-[var(--ui-error)]',
-  unknown: 'text-[var(--ui-text-dimmed)]',
-}
-function riskTextClass(level: string): string { return RISK_TEXT_CLASSES[level] ?? '' }
+// Risk color/icon maps auto-imported from app/utils/risk.ts
 
 function fmt(n: number) { return n.toFixed(2) }
 
