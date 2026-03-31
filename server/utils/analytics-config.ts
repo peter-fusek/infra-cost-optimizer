@@ -15,7 +15,7 @@ export interface ProjectAnalyticsConfig {
 
 // Map project slugs to their analytics properties
 // Update these when adding GA4 or GSC to a project
-// GA4 Property IDs from Google Analytics (instarea.sk account: 319689036, BudgetCo: 388351377)
+// GA4 Property IDs from Google Analytics (instarea.sk account: 319689036, BudgetCo account: 388351377)
 // Service account: homegrif-reports@homegrif-analytics.iam.gserviceaccount.com
 export const ANALYTICS_CONFIG: ProjectAnalyticsConfig[] = [
   { slug: 'infracost', ga4PropertyId: '529880367', gscSiteUrl: 'https://infracost.eu' },
@@ -23,7 +23,7 @@ export const ANALYTICS_CONFIG: ProjectAnalyticsConfig[] = [
   { slug: 'oncoteam', ga4PropertyId: '529091873', gscSiteUrl: 'https://oncoteam.cloud' },
   { slug: 'oncofiles', ga4PropertyId: '529785236', gscSiteUrl: 'https://oncofiles.com' },
   { slug: 'contacts-refiner', ga4PropertyId: '529886218', gscSiteUrl: 'sc-domain:contactrefiner.com' },
-  { slug: 'budgetco', ga4PropertyId: '388351377', gscSiteUrl: 'sc-domain:budgetco.eu' },
+  { slug: 'budgetco', ga4PropertyId: '529309393', gscSiteUrl: 'sc-domain:budgetco.eu' },
   { slug: 'pulseshape', ga4PropertyId: '494047490', gscSiteUrl: 'sc-domain:pulseshape.com' },
   { slug: 'instarea', ga4PropertyId: '447834242', gscSiteUrl: 'sc-domain:instarea.com' }, // redirects to instarea.sk since 2026-03-31
   { slug: 'instarea.sk', ga4PropertyId: '530091886', gscSiteUrl: 'sc-domain:instarea.sk' },
