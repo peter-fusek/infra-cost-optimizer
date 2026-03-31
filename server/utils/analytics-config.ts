@@ -23,9 +23,9 @@ export const ANALYTICS_CONFIG: ProjectAnalyticsConfig[] = [
   { slug: 'oncoteam', ga4PropertyId: '529091873', gscSiteUrl: 'https://oncoteam.cloud' },
   { slug: 'oncofiles', ga4PropertyId: '529785236', gscSiteUrl: 'https://oncofiles.com' },
   { slug: 'contacts-refiner', ga4PropertyId: '529886218', gscSiteUrl: 'sc-domain:contactrefiner.com' },
-  { slug: 'budgetco', ga4PropertyId: '529309393', gscSiteUrl: 'sc-domain:budgetco.eu' },
+  { slug: 'budgetco', ga4PropertyId: '388351377', gscSiteUrl: 'sc-domain:budgetco.eu' },
   { slug: 'pulseshape', ga4PropertyId: '494047490', gscSiteUrl: 'sc-domain:pulseshape.com' },
-  { slug: 'instarea', ga4PropertyId: '447834242', gscSiteUrl: 'sc-domain:instarea.com' },
+  { slug: 'instarea', ga4PropertyId: '447834242', gscSiteUrl: 'sc-domain:instarea.com' }, // redirects to instarea.sk since 2026-03-31
   { slug: 'instarea.sk', ga4PropertyId: '530091886', gscSiteUrl: 'sc-domain:instarea.sk' },
   { slug: 'scrabsnap', ga4PropertyId: '529720507', gscSiteUrl: null },
   // robota removed — project no longer exists

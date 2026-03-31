@@ -123,3 +123,22 @@
   background: rgba(16, 185, 129, 0.15);
   color: rgb(52, 211, 153);
 }
+
+/* Logo carousel — infinite horizontal scroll */
+.logo-carousel {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+.logo-track {
+  display: flex;
+  gap: 0.75rem;
+  width: max-content;
+  animation: scroll-logos 30s linear infinite;
+}
+.logo-track:hover {
+  animation-play-state: paused;
+}
+@keyframes scroll-logos {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}

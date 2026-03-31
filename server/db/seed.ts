@@ -84,7 +84,7 @@ export const serviceSeed = [
   { platformSlug: 'uptimerobot', name: 'Monitoring (10 monitors)', project: null, serviceType: 'monitoring', monthlyCostEstimate: '0.00' },
 
   // Websupport — 18 domains + 1 hosting + 1 email (scraped 2026-03-24)
-  { platformSlug: 'websupport', name: 'Hosting Super (instarea)', project: 'instarea', serviceType: 'hosting', monthlyCostEstimate: '5.00' }, // ~€60/yr
+  { platformSlug: 'websupport', name: 'Hosting Super (instarea)', project: 'instarea', serviceType: 'hosting', monthlyCostEstimate: '5.00' }, // ~€60/yr — decommission after 2026-04-30 (redirect to Railway)
   { platformSlug: 'websupport', name: 'infracost.eu', project: 'infracost', serviceType: 'domain', monthlyCostEstimate: '0.58' }, // ~€6.90/yr
   { platformSlug: 'websupport', name: 'budgetco.eu', project: 'budgetco', serviceType: 'domain', monthlyCostEstimate: '0.58' },
   { platformSlug: 'websupport', name: 'oncoteam.cloud', project: 'oncoteam', serviceType: 'domain', monthlyCostEstimate: '0.58' },
@@ -134,8 +134,8 @@ export const projectSeed = [
   { slug: 'pulseshape', name: 'PulseShape', description: 'Health data visualization', repoUrl: 'https://github.com/instarea-sk/pulseshape', productionUrl: 'https://pulseshape.com', techStack: ['vue', 'python', 'gcp'], status: 'active' as const },
   { slug: 'grandpa_check', name: 'Grandpa Check', description: 'Elderly wellness check-in system', repoUrl: 'https://github.com/instarea-sk/grandpa_check', productionUrl: null, techStack: ['python', 'github-actions'], status: 'active' as const },
   { slug: 'replica.city', name: 'Replica City', description: '3D city replica visualization', repoUrl: 'https://github.com/instarea-sk/replica-city', productionUrl: null, techStack: ['javascript', 'three.js'], status: 'paused' as const },
-  { slug: 'instarea', name: 'Instarea', description: 'Company website (instarea.com)', repoUrl: 'https://github.com/instarea-sk/instareaweb', productionUrl: 'https://instarea.com', techStack: ['nuxt', 'render'], status: 'paused' as const },
-  { slug: 'instarea.sk', name: 'Instarea SK', description: 'Future instarea.sk company page', repoUrl: 'https://github.com/instarea-sk/instareaweb', productionUrl: 'https://instarea.sk', techStack: ['nuxt', 'render'], status: 'active' as const },
+  { slug: 'instarea', name: 'Instarea', description: 'Company website (instarea.com) — redirects to instarea.sk since 2026-03-31', repoUrl: 'https://github.com/instarea-sk/instareaweb', productionUrl: 'https://instarea.com', techStack: ['nuxt', 'websupport'], status: 'paused' as const },
+  { slug: 'instarea.sk', name: 'Instarea SK', description: 'Company website (migrated from instarea.com 2026-03-31)', repoUrl: 'https://github.com/instarea-sk/instareaweb', productionUrl: 'https://instarea.sk', techStack: ['nuxt', 'railway', 'turso'], status: 'active' as const },
   { slug: 'personal', name: 'Personal (Claude)', description: 'Personal Claude Max account', repoUrl: null, productionUrl: null, techStack: ['claude'], status: 'active' as const },
 ]
 

@@ -170,18 +170,18 @@ const features = [
 ]
 
 const platforms = [
-  { name: 'Render', type: 'hosting' },
-  { name: 'Railway', type: 'hosting' },
-  { name: 'Anthropic', type: 'ai' },
-  { name: 'Claude Max', type: 'ai' },
-  { name: 'Neon', type: 'database' },
-  { name: 'Turso', type: 'database' },
-  { name: 'Resend', type: 'email' },
-  { name: 'UptimeRobot', type: 'monitoring' },
-  { name: 'GCP', type: 'cloud' },
-  { name: 'GitHub', type: 'ci_cd' },
-  { name: 'Google Services', type: 'analytics' },
-  { name: 'Websupport', type: 'domain' },
+  { name: 'Render', type: 'hosting', icon: 'i-simple-icons-render' },
+  { name: 'Railway', type: 'hosting', icon: 'i-simple-icons-railway' },
+  { name: 'Anthropic', type: 'ai', icon: 'i-simple-icons-anthropic' },
+  { name: 'Claude', type: 'ai', icon: 'i-simple-icons-claude' },
+  { name: 'Neon', type: 'database', icon: 'i-simple-icons-neon' },
+  { name: 'Turso', type: 'database', icon: 'i-simple-icons-turso' },
+  { name: 'Resend', type: 'email', icon: 'i-simple-icons-resend' },
+  { name: 'UptimeRobot', type: 'monitoring', icon: 'i-simple-icons-uptimerobot' },
+  { name: 'Google Cloud', type: 'cloud', icon: 'i-simple-icons-googlecloud' },
+  { name: 'GitHub', type: 'ci_cd', icon: 'i-simple-icons-github' },
+  { name: 'Google', type: 'analytics', icon: 'i-simple-icons-google' },
+  { name: 'Websupport', type: 'domain', icon: 'i-lucide-globe' },
 ]
 </script>
 
@@ -253,19 +253,20 @@ const platforms = [
       </div>
     </section>
 
-    <!-- Tracked Platforms -->
-    <section class="text-center animate-fade-in-up" style="animation-delay: 700ms">
-      <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-[var(--ui-text-dimmed)]">Pulling live costs from</h2>
-      <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-        <UBadge
-          v-for="p in platforms"
-          :key="p.name"
-          :color="p.type === 'ai' ? 'warning' : p.type === 'hosting' ? 'primary' : p.type === 'database' ? 'success' : 'neutral'"
-          variant="subtle"
-          size="lg"
-        >
-          {{ p.name }}
-        </UBadge>
+    <!-- Tracked Platforms — auto-scrolling carousel -->
+    <section class="animate-fade-in-up overflow-hidden" style="animation-delay: 700ms">
+      <h2 class="text-center text-xs font-bold uppercase tracking-[0.2em] text-[var(--ui-text-dimmed)] mb-4">Pulling live costs from</h2>
+      <div class="logo-carousel">
+        <div class="logo-track">
+          <div
+            v-for="(p, i) in [...platforms, ...platforms]"
+            :key="`${p.name}-${i}`"
+            class="flex items-center gap-2 rounded-lg border border-[var(--ui-border)] bg-[var(--ui-bg-elevated)] px-4 py-2.5 shrink-0"
+          >
+            <UIcon :name="p.icon" class="size-5 text-[var(--ui-text-muted)]" />
+            <span class="text-sm font-medium whitespace-nowrap">{{ p.name }}</span>
+          </div>
+        </div>
       </div>
     </section>
 
