@@ -61,6 +61,7 @@ export function formatUsage(value: number, unit: string): string {
     return String(value)
   }
   if (unit === 'USD') return `$${value.toFixed(2)}`
+  if (unit === 'minutes') return `${Math.round(value)} min`
   return String(value)
 }
 

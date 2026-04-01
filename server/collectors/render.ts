@@ -1,4 +1,6 @@
 import type { BaseCollector, CollectorResult, CostRecord } from './base'
+import { getMonthProgress } from './base'
+import { withRetry } from '../utils/retry'
 
 /**
  * Render hybrid collector.
@@ -41,6 +43,26 @@ interface RenderService {
     region?: string
     env?: string
   }
+}
+
+interface RenderDeploy {
+  id: string
+  createdAt: string
+  finishedAt: string | null
+  status: string
+}
+
+const PIPELINE_LIMIT = 500
+const OVERAGE_RATE = 5 / 1000 // $5 per 1000 minutes
+
+function computeDeployMinutes(deploy: RenderDeploy): number {
+  if (!deploy.finishedAt) return 0
+  // Only count completed deploys (live or build_failed consume build minutes)
+  if (deploy.status !== 'live' && deploy.status !== 'build_failed') return 0
+  const ms = new Date(deploy.finishedAt).getTime() - new Date(deploy.createdAt).getTime()
+  if (ms <= 0) return 0
+  // Cap at 60 minutes per deploy as a safety guard
+  return Math.min(60, ms / 60_000)
 }
 
 interface RenderPostgres {
@@ -172,6 +194,78 @@ export function createRenderCollector(
             rawData: { postgresId: db.id, diskSizeGB: diskGB, plan: db.plan, status: db.status },
             notes: `${db.name}: ${isSuspended ? 'SUSPENDED' : `PostgreSQL ${db.plan || 'basic-256mb'} + ${diskGB}GB disk`}`,
           })
+        }
+        // Pipeline build minutes — estimate from deploy timestamps
+        try {
+          const perService: Record<string, number> = {}
+          let totalMinutes = 0
+
+          for (const { service } of servicesData) {
+            if (service.suspended === 'suspended') continue
+
+            try {
+              const deploysUrl = `https://api.render.com/v1/services/${service.id}/deploys?limit=100`
+              const deploysRes = await withRetry(
+                () => fetch(deploysUrl, { headers, signal: AbortSignal.timeout(15_000) }),
+                { attempts: 2, label: `deploys:${service.name}` },
+              )
+
+              if (!deploysRes.ok) {
+                errors.push(`Render deploys API ${deploysRes.status} for ${service.name}`)
+                continue
+              }
+
+              const deploysData = await deploysRes.json() as Array<{ deploy: RenderDeploy }>
+              let serviceMinutes = 0
+              for (const { deploy } of deploysData) {
+                // Only count deploys within the collection period
+                const created = new Date(deploy.createdAt)
+                if (created < periodStart || created > periodEnd) continue
+                serviceMinutes += computeDeployMinutes(deploy)
+              }
+
+              serviceMinutes = Math.round(serviceMinutes * 100) / 100
+              if (serviceMinutes > 0) {
+                perService[service.name] = serviceMinutes
+              }
+              totalMinutes += serviceMinutes
+            }
+            catch (err) {
+              errors.push(`Render deploys fetch failed for ${service.name}: ${err instanceof Error ? err.message : String(err)}`)
+            }
+          }
+
+          totalMinutes = Math.round(totalMinutes * 100) / 100
+          const monthProgress = Math.max(0.1, getMonthProgress())
+          const projectedEOM = Math.round(totalMinutes / monthProgress)
+          const overageCost = Math.max(0, (totalMinutes - PIPELINE_LIMIT) * OVERAGE_RATE)
+          const projectedOverageCost = Math.max(0, (projectedEOM - PIPELINE_LIMIT) * OVERAGE_RATE)
+
+          records.push({
+            platformId,
+            serviceId: undefined,
+            recordDate: new Date(),
+            periodStart,
+            periodEnd,
+            amount: overageCost.toFixed(4),
+            currency: 'USD',
+            costType: 'usage',
+            collectionMethod: 'hybrid',
+            rawData: {
+              type: 'pipeline_minutes',
+              pipelineMinutesTotal: totalMinutes,
+              perService,
+              projectedEOM,
+              overageCost: Math.round(overageCost * 100) / 100,
+              projectedOverageCost: Math.round(projectedOverageCost * 100) / 100,
+              isEstimated: true,
+              manualOverride: null,
+            },
+            notes: `Render build minutes: ${totalMinutes} min MTD (${projectedEOM} projected EOM)`,
+          })
+        }
+        catch (err) {
+          errors.push(`Render pipeline minutes collection failed: ${err instanceof Error ? err.message : String(err)}`)
         }
       }
       catch (err) {

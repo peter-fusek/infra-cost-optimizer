@@ -51,7 +51,11 @@ describe('formatUsage', () => {
 
   it('formats count and other units as plain string', () => {
     expect(formatUsage(50, 'count')).toBe('50')
-    expect(formatUsage(500, 'minutes')).toBe('500')
+  })
+
+  it('formats minutes with unit suffix', () => {
+    expect(formatUsage(500, 'minutes')).toBe('500 min')
+    expect(formatUsage(342.7, 'minutes')).toBe('343 min')
   })
 })
 

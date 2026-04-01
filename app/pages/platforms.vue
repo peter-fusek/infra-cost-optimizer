@@ -124,7 +124,53 @@ interface CollectionRun {
 
 const runsCache = ref<Record<string, CollectionRun[]>>({})
 const loadingRuns = ref<Set<string>>(new Set())
-const showTab = ref<Record<string, 'services' | 'runs'>>({})
+const showTab = ref<Record<string, 'services' | 'runs' | 'pipeline'>>({})
+
+// Pipeline build minutes (lazy-loaded for Render)
+interface BuildMinutesData {
+  totalMinutes: number | null
+  limitMinutes: number
+  pct: number | null
+  projectedEOM: number | null
+  projectedOverageCost: number | null
+  overageCost: number
+  isEstimated: boolean
+  manualOverride: number | null
+  perService: Record<string, number>
+  recordedAt: string | null
+}
+
+const pipelineData = ref<BuildMinutesData | null>(null)
+const loadingPipeline = ref(false)
+
+async function loadPipeline() {
+  if (pipelineData.value || loadingPipeline.value) return
+  loadingPipeline.value = true
+  try {
+    pipelineData.value = await $fetch<BuildMinutesData>('/api/render/build-minutes')
+  }
+  catch {
+    pipelineData.value = null
+  }
+  finally {
+    loadingPipeline.value = false
+  }
+}
+
+function pipelineRisk(pct: number | null): string {
+  if (pct === null) return 'unknown'
+  if (pct >= 100) return 'exceeded'
+  if (pct >= 90) return 'critical'
+  if (pct >= 75) return 'warning'
+  return 'ok'
+}
+
+const sortedPipelineServices = computed(() => {
+  if (!pipelineData.value?.perService) return []
+  return Object.entries(pipelineData.value.perService)
+    .map(([name, minutes]) => ({ name, minutes }))
+    .sort((a, b) => b.minutes - a.minutes)
+})
 
 async function loadRuns(slug: string) {
   if (runsCache.value[slug] || loadingRuns.value.has(slug)) return
@@ -141,9 +187,10 @@ async function loadRuns(slug: string) {
   }
 }
 
-function switchTab(slug: string, tab: 'services' | 'runs') {
+function switchTab(slug: string, tab: 'services' | 'runs' | 'pipeline') {
   showTab.value[slug] = tab
   if (tab === 'runs') loadRuns(slug)
+  if (tab === 'pipeline') loadPipeline()
 }
 
 function fmtDuration(ms: number | null): string {
@@ -282,6 +329,13 @@ function runStatusColor(status: string): string {
                 label="Collection Runs"
                 @click="switchTab(platform.slug, 'runs')"
               />
+              <UButton
+                v-if="platform.slug === 'render'"
+                size="xs"
+                :variant="showTab[platform.slug] === 'pipeline' ? 'solid' : 'ghost'"
+                label="Build Minutes"
+                @click="switchTab(platform.slug, 'pipeline')"
+              />
             </div>
 
             <!-- Services tab -->
@@ -329,7 +383,7 @@ function runStatusColor(status: string): string {
             </template>
 
             <!-- Collection Runs tab -->
-            <template v-else>
+            <template v-else-if="showTab[platform.slug] === 'runs'">
               <div v-if="loadingRuns.has(platform.slug)" class="flex justify-center py-4">
                 <UIcon name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-muted)]" />
               </div>
@@ -364,6 +418,106 @@ function runStatusColor(status: string): string {
                 </table>
               </div>
               <p v-else class="text-sm text-[var(--ui-text-muted)] py-2">No collection runs recorded</p>
+            </template>
+
+            <!-- Build Minutes tab (Render only) -->
+            <template v-else-if="showTab[platform.slug] === 'pipeline'">
+              <div v-if="loadingPipeline" class="flex justify-center py-4">
+                <UIcon name="i-lucide-loader-2" class="size-4 animate-spin text-[var(--ui-text-muted)]" />
+              </div>
+              <div v-else-if="pipelineData" class="space-y-4">
+                <!-- Progress bar -->
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="font-medium">Pipeline Minutes</span>
+                    <span class="text-[var(--ui-text-muted)]">
+                      <template v-if="pipelineData.totalMinutes !== null">
+                        {{ Math.round(pipelineData.totalMinutes) }} / {{ pipelineData.limitMinutes }} min
+                        <span class="font-mono ml-1" :class="riskTextClass(pipelineRisk(pipelineData.pct))">
+                          ({{ pipelineData.pct }}%)
+                        </span>
+                      </template>
+                      <template v-else>
+                        <span class="text-[var(--ui-text-dimmed)]">No data yet</span>
+                      </template>
+                    </span>
+                  </div>
+                  <div class="h-3 w-full rounded-full bg-[var(--ui-bg-elevated)]">
+                    <div
+                      v-if="pipelineData.pct !== null"
+                      class="h-3 rounded-full transition-all"
+                      :class="barColor(pipelineRisk(pipelineData.pct))"
+                      :style="{ width: `${Math.min(pipelineData.pct, 100)}%` }"
+                    />
+                    <div
+                      v-else
+                      class="h-3 w-full rounded-full"
+                      style="background: repeating-linear-gradient(45deg, transparent, transparent 4px, var(--ui-border) 4px, var(--ui-border) 8px)"
+                    />
+                  </div>
+                </div>
+
+                <!-- Metrics row -->
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 text-sm">
+                  <div>
+                    <p class="text-[var(--ui-text-muted)]">Used MTD</p>
+                    <p class="font-mono font-medium">{{ pipelineData.totalMinutes !== null ? `${Math.round(pipelineData.totalMinutes)} min` : 'N/A' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-[var(--ui-text-muted)]">Projected EOM</p>
+                    <p class="font-mono font-medium" :class="pipelineData.projectedEOM !== null && pipelineData.projectedEOM > pipelineData.limitMinutes ? 'text-[var(--ui-error)]' : ''">
+                      {{ pipelineData.projectedEOM !== null ? `${pipelineData.projectedEOM} min` : 'N/A' }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-[var(--ui-text-muted)]">Current Overage</p>
+                    <p class="font-mono font-medium">{{ pipelineData.overageCost > 0 ? `$${pipelineData.overageCost.toFixed(2)}` : '$0.00' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-[var(--ui-text-muted)]">Projected Overage</p>
+                    <p class="font-mono font-medium" :class="pipelineData.projectedOverageCost && pipelineData.projectedOverageCost > 0 ? 'text-[var(--ui-warning)]' : ''">
+                      {{ pipelineData.projectedOverageCost !== null ? `$${pipelineData.projectedOverageCost.toFixed(2)}` : 'N/A' }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Data source badge -->
+                <div class="flex items-center gap-2">
+                  <UBadge v-if="pipelineData.manualOverride !== null" color="warning" variant="subtle" size="xs">
+                    Manual override: {{ pipelineData.manualOverride }} min
+                  </UBadge>
+                  <UBadge v-else-if="pipelineData.isEstimated" variant="outline" size="xs" color="neutral">
+                    Estimated from deploy logs
+                  </UBadge>
+                  <span v-if="pipelineData.recordedAt" class="text-xs text-[var(--ui-text-dimmed)]">
+                    Updated {{ timeAgo(pipelineData.recordedAt) }}
+                  </span>
+                </div>
+
+                <!-- Per-service breakdown -->
+                <div v-if="sortedPipelineServices.length" class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="text-left text-[var(--ui-text-muted)]">
+                        <th class="pb-2 font-medium">Service</th>
+                        <th class="pb-2 text-right font-medium">Build Minutes</th>
+                        <th class="pb-2 text-right font-medium">% of Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="svc in sortedPipelineServices" :key="svc.name" class="border-t border-[var(--ui-border-muted)]">
+                        <td class="py-1.5">{{ svc.name }}</td>
+                        <td class="py-1.5 text-right font-mono">{{ svc.minutes.toFixed(1) }} min</td>
+                        <td class="py-1.5 text-right font-mono text-[var(--ui-text-muted)]">
+                          {{ pipelineData.totalMinutes ? Math.round((svc.minutes / pipelineData.totalMinutes) * 100) : 0 }}%
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p v-else class="text-sm text-[var(--ui-text-muted)]">No build activity this month</p>
+              </div>
+              <p v-else class="text-sm text-[var(--ui-text-muted)] py-2">No pipeline minutes data available</p>
             </template>
           </div>
         </div>

@@ -12,8 +12,8 @@ const THRESHOLDS = [
 export async function checkPlanLimitAlerts(db: ReturnType<typeof import('../utils/db').useDB>, config?: Record<string, string>) {
   const newAlerts: Array<{ severity: string; message: string; platform: string; metric: string }> = []
 
-  // Run both queries in parallel — they are independent
-  const [latestRecords, railwayTotal] = await Promise.all([
+  // Run all queries in parallel — they are independent
+  const [latestRecords, railwayTotal, renderPipelineRecord] = await Promise.all([
     db.execute<{
       platform_id: number
       slug: string
@@ -27,6 +27,7 @@ export async function checkPlanLimitAlerts(db: ReturnType<typeof import('../util
       join platforms p on p.id = cr.platform_id
       where cr.is_active = true and cr.deleted_at is null
         and cr.collection_method != 'manual'
+        and coalesce(cr.raw_data->>'type', '') != 'pipeline_minutes'
       order by cr.platform_id, cr.record_date desc
     `),
     db.execute<{ total: string }>(sql`
@@ -37,6 +38,16 @@ export async function checkPlanLimitAlerts(db: ReturnType<typeof import('../util
         and cr.is_active = true and cr.deleted_at is null
         and cr.collection_method = 'api'
         and cr.period_start >= date_trunc('month', now())
+    `),
+    db.execute<{ raw_data: Record<string, unknown> | null }>(sql`
+      select cr.raw_data
+      from cost_records cr
+      join platforms p on p.id = cr.platform_id
+      where p.slug = 'render'
+        and cr.is_active = true and cr.deleted_at is null
+        and cr.raw_data->>'type' = 'pipeline_minutes'
+      order by cr.record_date desc
+      limit 1
     `),
   ])
 
@@ -57,6 +68,16 @@ export async function checkPlanLimitAlerts(db: ReturnType<typeof import('../util
 
     if (row.slug === 'railway') {
       usage.monthly_credit_usd = parseFloat(railwayTotal.rows[0]?.total || '0')
+    }
+
+    // Render pipeline minutes from the typed aggregate record
+    if (row.slug === 'render') {
+      const pipelineRaw = renderPipelineRecord.rows[0]?.raw_data
+      if (pipelineRaw) {
+        const override = typeof pipelineRaw.manualOverride === 'number' ? pipelineRaw.manualOverride : null
+        const computed = typeof pipelineRaw.pipelineMinutesTotal === 'number' ? pipelineRaw.pipelineMinutesTotal : null
+        usage.pipeline_minutes = override ?? computed
+      }
     }
 
     for (const [metricKey, limitDef] of Object.entries(limits)) {

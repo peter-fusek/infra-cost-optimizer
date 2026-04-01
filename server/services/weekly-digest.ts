@@ -71,6 +71,33 @@ export async function sendWeeklyDigest(db: ReturnType<typeof useDB>, config: Rec
     lines.push('')
   }
 
+  // Render pipeline minutes
+  try {
+    const pipelineRecord = await db.execute<{ raw_data: Record<string, unknown> | null }>(sql`
+      select cr.raw_data
+      from cost_records cr
+      join platforms p on p.id = cr.platform_id
+      where p.slug = 'render'
+        and cr.is_active = true and cr.deleted_at is null
+        and cr.raw_data->>'type' = 'pipeline_minutes'
+      order by cr.record_date desc
+      limit 1
+    `)
+    const rd = pipelineRecord.rows[0]?.raw_data
+    if (rd && typeof rd.pipelineMinutesTotal === 'number' && rd.pipelineMinutesTotal > 0) {
+      const total = rd.pipelineMinutesTotal
+      const projected = typeof rd.projectedEOM === 'number' ? rd.projectedEOM : null
+      const projOverage = typeof rd.projectedOverageCost === 'number' ? rd.projectedOverageCost : 0
+      const pct = Math.round((total / 500) * 100)
+      lines.push('Build Minutes:')
+      lines.push(`  ${Math.round(total)} / 500 min (${pct}%)${projected ? ` — EOM: ${projected} min, ~$${projOverage.toFixed(2)} overage` : ''}`)
+      lines.push('')
+    }
+  }
+  catch {
+    // Non-fatal — skip pipeline minutes in digest
+  }
+
   // Active alerts
   if (pendingAlerts.length) {
     lines.push(`Active Alerts (${pendingAlerts.length}):`)
