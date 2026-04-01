@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PLAN_LIMITS, formatUsage, formatLimit, extractUsage } from '../server/utils/plan-limits'
+import { PLAN_LIMITS, PIPELINE_LIMIT, PIPELINE_OVERAGE_RATE, formatUsage, formatLimit, extractUsage, riskFromPct, extractPipelineMinutes } from '../server/utils/plan-limits'
 
 describe('PLAN_LIMITS', () => {
   it('defines limits for 6 platforms', () => {
@@ -109,5 +109,55 @@ describe('extractUsage', () => {
     const usage = extractUsage('resend', { emailsThisMonth: 42, emailsToday: 5 })
     expect(usage.emails_per_month).toBe(42)
     expect(usage.emails_per_day).toBe(5)
+  })
+})
+
+describe('pipeline constants', () => {
+  it('PIPELINE_LIMIT matches the render plan limit', () => {
+    expect(PIPELINE_LIMIT).toBe(500)
+    expect(PIPELINE_LIMIT).toBe(PLAN_LIMITS.render.pipeline_minutes.limit)
+  })
+
+  it('PIPELINE_OVERAGE_RATE is $5 per 1000 minutes', () => {
+    expect(PIPELINE_OVERAGE_RATE).toBe(0.005)
+  })
+})
+
+describe('riskFromPct', () => {
+  it('returns unknown for null', () => {
+    expect(riskFromPct(null)).toBe('unknown')
+  })
+
+  it('returns correct risk levels for thresholds', () => {
+    expect(riskFromPct(0)).toBe('ok')
+    expect(riskFromPct(74)).toBe('ok')
+    expect(riskFromPct(75)).toBe('warning')
+    expect(riskFromPct(89)).toBe('warning')
+    expect(riskFromPct(90)).toBe('critical')
+    expect(riskFromPct(99)).toBe('critical')
+    expect(riskFromPct(100)).toBe('exceeded')
+    expect(riskFromPct(150)).toBe('exceeded')
+  })
+})
+
+describe('extractPipelineMinutes', () => {
+  it('returns null for null input', () => {
+    expect(extractPipelineMinutes(null)).toBeNull()
+  })
+
+  it('returns computed value when no override', () => {
+    expect(extractPipelineMinutes({ pipelineMinutesTotal: 123.5, manualOverride: null })).toBe(123.5)
+  })
+
+  it('prefers manual override over computed', () => {
+    expect(extractPipelineMinutes({ pipelineMinutesTotal: 123.5, manualOverride: 200 })).toBe(200)
+  })
+
+  it('returns null when both are missing', () => {
+    expect(extractPipelineMinutes({})).toBeNull()
+  })
+
+  it('handles zero override correctly', () => {
+    expect(extractPipelineMinutes({ pipelineMinutesTotal: 50, manualOverride: 0 })).toBe(0)
   })
 })

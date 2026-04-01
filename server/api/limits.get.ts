@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { PLAN_LIMITS, formatUsage, formatLimit, extractUsage } from '../utils/plan-limits'
-import type { PlanLimit } from '../utils/plan-limits'
+import { PLAN_LIMITS, formatUsage, formatLimit, extractUsage, riskFromPct, extractPipelineMinutes } from '../utils/plan-limits'
+import { fetchLatestPipelineRecord } from '../utils/pipeline-query'
 
 interface LimitMetric {
   metric: string
@@ -20,21 +20,13 @@ interface PlatformLimits {
   worstRisk: 'ok' | 'warning' | 'critical' | 'exceeded' | 'unknown'
 }
 
-function riskFromPct(pct: number | null): LimitMetric['riskLevel'] {
-  if (pct === null) return 'unknown'
-  if (pct >= 100) return 'exceeded'
-  if (pct >= 90) return 'critical'
-  if (pct >= 75) return 'warning'
-  return 'ok'
-}
-
 const RISK_ORDER = { exceeded: 0, critical: 1, warning: 2, ok: 3, unknown: 4 }
 
 export default defineEventHandler(async () => {
   const db = useDB()
 
   // Run all queries in parallel — they are independent
-  const [latestRecords, railwayTotal, renderPipelineRecord] = await Promise.all([
+  const [latestRecords, railwayTotal, pipelineRawData] = await Promise.all([
     // Get latest cost record per platform (DISTINCT ON platform_id, ordered by record_date desc)
     db.execute<{
       platform_id: number
@@ -64,17 +56,7 @@ export default defineEventHandler(async () => {
         and cr.period_start >= date_trunc('month', now())
     `),
 
-    // Render pipeline minutes — fetch the specific aggregate record
-    db.execute<{ raw_data: Record<string, unknown> | null }>(sql`
-      select cr.raw_data
-      from cost_records cr
-      join platforms p on p.id = cr.platform_id
-      where p.slug = 'render'
-        and cr.is_active = true and cr.deleted_at is null
-        and cr.raw_data->>'type' = 'pipeline_minutes'
-      order by cr.record_date desc
-      limit 1
-    `),
+    fetchLatestPipelineRecord(db),
   ])
 
   const results: PlatformLimits[] = []
@@ -94,12 +76,7 @@ export default defineEventHandler(async () => {
 
     // Special case: Render pipeline minutes from the typed aggregate record
     if (row.slug === 'render') {
-      const pipelineRaw = renderPipelineRecord.rows[0]?.raw_data
-      if (pipelineRaw) {
-        const override = typeof pipelineRaw.manualOverride === 'number' ? pipelineRaw.manualOverride : null
-        const computed = typeof pipelineRaw.pipelineMinutesTotal === 'number' ? pipelineRaw.pipelineMinutesTotal : null
-        usage.pipeline_minutes = override ?? computed
-      }
+      usage.pipeline_minutes = extractPipelineMinutes(pipelineRawData)
     }
 
     const metrics: LimitMetric[] = []

@@ -11,6 +11,10 @@
  * - Railway: https://docs.railway.com/reference/pricing/plans
  */
 
+/** Render pipeline build minutes — Professional plan includes 500 min/mo, $5/1000 overage */
+export const PIPELINE_LIMIT = 500
+export const PIPELINE_OVERAGE_RATE = 5 / 1000
+
 export interface PlanLimit {
   limit: number
   unit: string
@@ -105,4 +109,21 @@ export function extractUsage(slug: string, rawData: Record<string, unknown>): Re
     default:
       return {}
   }
+}
+
+/** Map usage percentage to risk level */
+export function riskFromPct(pct: number | null): 'ok' | 'warning' | 'critical' | 'exceeded' | 'unknown' {
+  if (pct === null) return 'unknown'
+  if (pct >= 100) return 'exceeded'
+  if (pct >= 90) return 'critical'
+  if (pct >= 75) return 'warning'
+  return 'ok'
+}
+
+/** Extract effective pipeline minutes from raw_data (manual override takes precedence) */
+export function extractPipelineMinutes(rawData: Record<string, unknown> | null): number | null {
+  if (!rawData) return null
+  const override = typeof rawData.manualOverride === 'number' ? rawData.manualOverride : null
+  const computed = typeof rawData.pipelineMinutesTotal === 'number' ? rawData.pipelineMinutesTotal : null
+  return override ?? computed
 }

@@ -1,11 +1,10 @@
 import { sql } from 'drizzle-orm'
-
-const PIPELINE_LIMIT = 500
-const OVERAGE_RATE = 5 / 1000
+import { PIPELINE_LIMIT, extractPipelineMinutes } from '../../utils/plan-limits'
 
 export default defineEventHandler(async () => {
   const db = useDB()
 
+  // Need record_date in addition to raw_data, so use inline query instead of fetchLatestPipelineRecord
   const result = await db.execute<{ raw_data: Record<string, unknown> | null; record_date: string }>(sql`
     select cr.raw_data, cr.record_date
     from cost_records cr
@@ -34,9 +33,8 @@ export default defineEventHandler(async () => {
   }
 
   const rd = row.raw_data
+  const totalMinutes = extractPipelineMinutes(rd)
   const override = typeof rd.manualOverride === 'number' ? rd.manualOverride : null
-  const computed = typeof rd.pipelineMinutesTotal === 'number' ? rd.pipelineMinutesTotal : null
-  const totalMinutes = override ?? computed
   const pct = totalMinutes !== null ? Math.round((totalMinutes / PIPELINE_LIMIT) * 100) : null
 
   return {

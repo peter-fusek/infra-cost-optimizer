@@ -33,3 +33,12 @@ export const URGENCY_SCORES: Record<string, number> = {
   warning: 3,
   ok: 4, unknown: 5,
 }
+
+/** Map usage percentage to risk level */
+export function riskFromPct(pct: number | null): string {
+  if (pct === null) return 'unknown'
+  if (pct >= 100) return 'exceeded'
+  if (pct >= 90) return 'critical'
+  if (pct >= 75) return 'warning'
+  return 'ok'
+}

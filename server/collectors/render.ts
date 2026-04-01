@@ -1,6 +1,7 @@
 import type { BaseCollector, CollectorResult, CostRecord } from './base'
 import { getMonthProgress } from './base'
 import { withRetry } from '../utils/retry'
+import { PIPELINE_LIMIT, PIPELINE_OVERAGE_RATE } from '../utils/plan-limits'
 
 /**
  * Render hybrid collector.
@@ -52,8 +53,6 @@ interface RenderDeploy {
   status: string
 }
 
-const PIPELINE_LIMIT = 500
-const OVERAGE_RATE = 5 / 1000 // $5 per 1000 minutes
 
 function computeDeployMinutes(deploy: RenderDeploy): number {
   if (!deploy.finishedAt) return 0
@@ -238,8 +237,8 @@ export function createRenderCollector(
           totalMinutes = Math.round(totalMinutes * 100) / 100
           const monthProgress = Math.max(0.1, getMonthProgress())
           const projectedEOM = Math.round(totalMinutes / monthProgress)
-          const overageCost = Math.max(0, (totalMinutes - PIPELINE_LIMIT) * OVERAGE_RATE)
-          const projectedOverageCost = Math.max(0, (projectedEOM - PIPELINE_LIMIT) * OVERAGE_RATE)
+          const overageCost = Math.max(0, (totalMinutes - PIPELINE_LIMIT) * PIPELINE_OVERAGE_RATE)
+          const projectedOverageCost = Math.max(0, (projectedEOM - PIPELINE_LIMIT) * PIPELINE_OVERAGE_RATE)
 
           records.push({
             platformId,

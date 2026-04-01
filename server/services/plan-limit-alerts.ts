@@ -1,6 +1,7 @@
 import { sql, and, eq, gte } from 'drizzle-orm'
 import { alerts } from '../db/schema'
-import { PLAN_LIMITS, formatUsage, formatLimit, extractUsage } from '../utils/plan-limits'
+import { PLAN_LIMITS, formatUsage, formatLimit, extractUsage, extractPipelineMinutes } from '../utils/plan-limits'
+import { fetchLatestPipelineRecord } from '../utils/pipeline-query'
 import { sendAlertEmail, sendWhatsApp } from '../utils/notifications'
 
 const THRESHOLDS = [
@@ -13,7 +14,7 @@ export async function checkPlanLimitAlerts(db: ReturnType<typeof import('../util
   const newAlerts: Array<{ severity: string; message: string; platform: string; metric: string }> = []
 
   // Run all queries in parallel — they are independent
-  const [latestRecords, railwayTotal, renderPipelineRecord] = await Promise.all([
+  const [latestRecords, railwayTotal, pipelineRawData] = await Promise.all([
     db.execute<{
       platform_id: number
       slug: string
@@ -39,16 +40,7 @@ export async function checkPlanLimitAlerts(db: ReturnType<typeof import('../util
         and cr.collection_method = 'api'
         and cr.period_start >= date_trunc('month', now())
     `),
-    db.execute<{ raw_data: Record<string, unknown> | null }>(sql`
-      select cr.raw_data
-      from cost_records cr
-      join platforms p on p.id = cr.platform_id
-      where p.slug = 'render'
-        and cr.is_active = true and cr.deleted_at is null
-        and cr.raw_data->>'type' = 'pipeline_minutes'
-      order by cr.record_date desc
-      limit 1
-    `),
+    fetchLatestPipelineRecord(db),
   ])
 
   // Batch-load recent limit alerts for dedup (single query instead of N+1)
@@ -72,12 +64,7 @@ export async function checkPlanLimitAlerts(db: ReturnType<typeof import('../util
 
     // Render pipeline minutes from the typed aggregate record
     if (row.slug === 'render') {
-      const pipelineRaw = renderPipelineRecord.rows[0]?.raw_data
-      if (pipelineRaw) {
-        const override = typeof pipelineRaw.manualOverride === 'number' ? pipelineRaw.manualOverride : null
-        const computed = typeof pipelineRaw.pipelineMinutesTotal === 'number' ? pipelineRaw.pipelineMinutesTotal : null
-        usage.pipeline_minutes = override ?? computed
-      }
+      usage.pipeline_minutes = extractPipelineMinutes(pipelineRawData)
     }
 
     for (const [metricKey, limitDef] of Object.entries(limits)) {

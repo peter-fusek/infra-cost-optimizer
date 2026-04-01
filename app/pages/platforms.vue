@@ -157,14 +157,6 @@ async function loadPipeline() {
   }
 }
 
-function pipelineRisk(pct: number | null): string {
-  if (pct === null) return 'unknown'
-  if (pct >= 100) return 'exceeded'
-  if (pct >= 90) return 'critical'
-  if (pct >= 75) return 'warning'
-  return 'ok'
-}
-
 const sortedPipelineServices = computed(() => {
   if (!pipelineData.value?.perService) return []
   return Object.entries(pipelineData.value.perService)
@@ -433,7 +425,7 @@ function runStatusColor(status: string): string {
                     <span class="text-[var(--ui-text-muted)]">
                       <template v-if="pipelineData.totalMinutes !== null">
                         {{ Math.round(pipelineData.totalMinutes) }} / {{ pipelineData.limitMinutes }} min
-                        <span class="font-mono ml-1" :class="riskTextClass(pipelineRisk(pipelineData.pct))">
+                        <span class="font-mono ml-1" :class="riskTextClass(riskFromPct(pipelineData.pct))">
                           ({{ pipelineData.pct }}%)
                         </span>
                       </template>
@@ -446,7 +438,7 @@ function runStatusColor(status: string): string {
                     <div
                       v-if="pipelineData.pct !== null"
                       class="h-3 rounded-full transition-all"
-                      :class="barColor(pipelineRisk(pipelineData.pct))"
+                      :class="barColor(riskFromPct(pipelineData.pct))"
                       :style="{ width: `${Math.min(pipelineData.pct, 100)}%` }"
                     />
                     <div
